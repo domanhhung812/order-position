@@ -10,39 +10,38 @@
 <body class="bg-gray-100 p-4 md:p-6 font-sans">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm mb-6 border-l-4 border-blue-600">
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm mb-6 border-l-4 border-blue-500">
             <div>
                 <h1 class="text-xl md:text-2xl font-bold text-gray-800">Nhật Ký ETH</h1>
-                <p class="text-xs text-gray-500 uppercase tracking-widest">Binance Live | Gemini 3.1 AI</p>
+                <p class="text-xs text-gray-500 uppercase font-bold tracking-widest">Binance Live | Gemini 3.1</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-gray-400">Giá ETH/USDT</p>
+                <p class="text-xs text-gray-400 font-bold uppercase">Giá ETH/USDT</p>
                 <p id="ethPrice" class="text-xl md:text-2xl font-bold text-gray-400">Kết nối...</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="bg-white p-5 rounded-lg shadow-md lg:col-span-1 h-fit">
-                <h2 class="text-lg font-bold mb-4 border-b pb-2">Lệnh Mới</h2>
+                <h2 class="text-lg font-bold mb-4 border-b pb-2 italic">📌 Thêm Lệnh Mới</h2>
                 
-                <div class="mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50 hover:border-blue-400 transition-colors">
-                    <p class="text-[10px] text-gray-500 mb-2 font-bold uppercase">Quét ảnh BingX (Gemini 3.1)</p>
+                <div class="mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
                     <input type="file" id="imageInput" accept="image/*" class="text-xs w-full" onchange="simulateImageUpload(this)">
-                    <p id="uploadStatus" class="text-xs text-blue-500 mt-2 hidden italic font-bold">Đang soi ảnh...</p>
+                    <p id="uploadStatus" class="text-xs text-blue-600 mt-2 hidden font-bold animate-pulse italic">AI đang xử lý ảnh...</p>
                 </div>
 
                 <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-3">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase">Tiêu đề</label>
-                        <input type="text" id="tradeTitle" placeholder="Ví dụ: ETHUSD" class="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                        <input type="text" id="tradeTitle" placeholder="Ví dụ: phuongvt" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 uppercase">Chiều</label>
                             <select id="direction" class="w-full border p-2 rounded text-sm font-bold bg-white outline-none">
-                                <option value="MUA" class="text-green-600">MUA (LONG)</option>
-                                <option value="BAN" class="text-red-600">BÁN (SHORT)</option>
+                                <option value="MUA" class="text-green-600 font-bold">MUA</option>
+                                <option value="BAN" class="text-red-600 font-bold">BÁN</option>
                             </select>
                         </div>
                         <div>
@@ -68,37 +67,37 @@
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Thời gian mở (Rất quan trọng)</label>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Thời gian vào lệnh</label>
                         <input type="datetime-local" id="openTime" required class="w-full border p-2 rounded text-sm outline-none">
                     </div>
 
-                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition mt-4 shadow-lg shadow-blue-100">
-                        LƯU LỆNH VÀO NHẬT KÝ
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition mt-4 shadow-lg active:scale-95">
+                        LƯU LỆNH
                     </button>
                 </form>
             </div>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md lg:col-span-3 flex flex-col">
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md lg:col-span-3">
                 <div class="flex border-b mb-4 space-x-6">
-                    <button id="btnTabOpen" onclick="switchTab('OPEN')" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600 transition-all">
+                    <button id="btnTabOpen" onclick="switchTab('OPEN')" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600">
                         Đang mở (<span id="countOpen">0</span>)
                     </button>
-                    <button id="btnTabClosed" onclick="switchTab('CLOSED')" class="pb-2 font-bold text-gray-400 hover:text-gray-600 transition-all">
+                    <button id="btnTabClosed" onclick="switchTab('CLOSED')" class="pb-2 font-bold text-gray-400 hover:text-gray-600">
                         Hoàn thành (<span id="countClosed">0</span>)
                     </button>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
+                    <table class="min-w-full text-left text-xs md:text-sm">
                         <thead class="bg-gray-50 border-b">
                             <tr>
-                                <th class="p-3 text-gray-600">Tiêu đề</th>
-                                <th class="p-3 text-gray-600">Lệnh</th>
-                                <th class="p-3 text-gray-600">Volume</th>
-                                <th class="p-3 text-gray-600">Giá mở</th>
-                                <th class="p-3 text-gray-600">Giá Live/Chốt</th>
-                                <th class="p-3 text-red-500">Phí qua đêm</th>
-                                <th class="p-3 text-blue-600">Net Profit</th>
+                                <th class="p-3">Tiêu đề</th>
+                                <th class="p-3">Lệnh</th>
+                                <th class="p-3">Volume</th>
+                                <th class="p-3">Giá mở</th>
+                                <th class="p-3">Giá Live/Chốt</th>
+                                <th class="p-3 text-green-600">TP</th> <th class="p-3 text-red-500">Phí qua đêm</th>
+                                <th class="p-3 text-blue-600 font-bold">Net Profit</th>
                                 <th class="p-3"></th>
                             </tr>
                         </thead>
@@ -114,7 +113,7 @@
         let trades = JSON.parse(localStorage.getItem('ethTrades')) || [];
         let currentTab = 'OPEN';
 
-        // 1. WEBSOCKET BINANCE
+        // 1. WEBSOCKET
         function connectWS() {
             const el = document.getElementById('ethPrice');
             const ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
@@ -123,97 +122,87 @@
                 if (data.c) {
                     currentEthPrice = parseFloat(data.c);
                     el.innerText = `$${currentEthPrice.toFixed(2)}`;
-                    el.className = "text-xl md:text-2xl font-bold text-green-500";
+                    el.className = "text-xl md:text-2xl font-bold text-green-500 animate-pulse";
                     renderTable();
                 }
             };
-            ws.onclose = () => setTimeout(connectWS, 3000);
+            ws.onclose = () => setTimeout(connectWS, 2000);
         }
         connectWS();
 
-        // 2. AI QUÉT ẢNH (GEMINI 3.1)
+        // 2. AI OCR
         async function simulateImageUpload(input) {
             if (!input.files || !input.files[0]) return;
-            const file = input.files[0];
             const status = document.getElementById('uploadStatus');
             let apiKey = localStorage.getItem('geminiApiKey');
-
             if (!apiKey) {
-                apiKey = prompt("🤖 Nhập Gemini API Key mới của bạn:");
+                apiKey = prompt("🤖 Nhập Gemini API Key:");
                 if (!apiKey) return;
                 localStorage.setItem('geminiApiKey', apiKey.trim());
             }
-
-            status.innerText = "🤖 Gemini 3.1 đang đọc ảnh...";
-            status.classList.remove('hidden', 'text-red-500');
+            status.classList.remove('hidden');
 
             try {
                 const base64 = await new Promise(res => {
-                    const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(file);
+                    const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
                 });
-
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                {text: "Đọc ảnh BingX và trả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}"},
-                                {inlineData: {data: base64, mimeType: file.type}}
-                            ]
-                        }]
+                        contents: [{ parts: [
+                            {text: "Đọc ảnh BingX trả về JSON chuẩn (không markdown): {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}"},
+                            {inlineData: {data: base64, mimeType: input.files[0].type}}
+                        ]}]
                     })
                 });
-
                 const json = await response.json();
-                if (json.error) throw new Error(json.error.message);
-
-                let text = json.candidates[0].content.parts[0].text;
-                text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                let text = json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const d = JSON.parse(text);
-
                 const clean = (v) => v ? String(v).replace(/,/g, '') : "";
-                document.getElementById('tradeTitle').value = d.title || "ETHUSD";
+                document.getElementById('tradeTitle').value = d.title || "BingX";
                 document.getElementById('direction').value = d.direction || "MUA";
                 document.getElementById('volume').value = clean(d.volume);
                 document.getElementById('openPrice').value = clean(d.openPrice);
                 document.getElementById('takeProfit').value = clean(d.takeProfit);
                 document.getElementById('stopLoss').value = clean(d.stopLoss);
                 if (d.openTime) document.getElementById('openTime').value = d.openTime;
-
                 status.innerText = "✅ Xong!";
-                setTimeout(() => status.classList.add('hidden'), 2000);
             } catch (e) {
-                status.innerText = "❌ " + e.message;
-                status.classList.add('text-red-500');
-                if (e.message.includes("404")) localStorage.removeItem('geminiApiKey');
-            } finally { input.value = ""; }
+                status.innerText = "❌ Lỗi: " + e.message;
+            } finally { setTimeout(() => status.classList.add('hidden'), 2000); }
         }
 
-        // 3. TÍNH PHÍ QUA ĐÊM (FIX CHUẨN)
+        // 3. LOGIC TÍNH PHÍ (ĐÃ FIX TRIỆT ĐỂ)
         function calculateTotalSwap(openTimeStr, closeTimeStr) {
             if (!openTimeStr) return 0;
-            let start = new Date(openTimeStr);
-            let end = closeTimeStr ? new Date(closeTimeStr) : new Date();
+            const start = new Date(openTimeStr);
+            const end = closeTimeStr ? new Date(closeTimeStr) : new Date();
             
-            // Chỉ tính nếu ngày đóng sau ngày mở
-            let d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-            let d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            // 1. Chỉ tính số đêm trôi qua (set về 0h ngày hôm đó)
+            const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
             
-            let totalSwap = 0;
-            const dailyFee = 0.63;
-            let tempDate = new Date(d1);
+            // Tính tổng số ngày chênh lệch
+            const diffDays = Math.floor((d2 - d1) / (24 * 60 * 60 * 1000));
+            if (diffDays <= 0) return 0;
 
-            while (tempDate < d2) {
-                // Đêm Thứ 6 sang Thứ 7 (getDay === 5) tính x3
-                totalSwap += (tempDate.getDay() === 5) ? (dailyFee * 3) : dailyFee;
-                tempDate.setDate(tempDate.getDate() + 1);
+            // 2. Đếm có bao nhiêu ngày Thứ 6 nằm giữa d1 và d2
+            let fridays = 0;
+            for (let i = 0; i < diffDays; i++) {
+                let checkDate = new Date(d1);
+                checkDate.setDate(d1.getDate() + i);
+                if (checkDate.getDay() === 5) { // Thứ 6
+                    fridays++;
+                }
             }
-            return totalSwap;
+
+            // 3. Tính tiền: Ngày thường 0.63, Thứ 6 x 3 (tức là + thêm 2 lần phí nữa)
+            // Fee = (Tổng ngày * 0.63) + (Số Thứ 6 * 1.26)
+            return (diffDays * 0.63) + (fridays * 1.26);
         }
 
-        // 4. LOGIC LƯU VÀ HIỂN THỊ
         function saveTrade(e) {
             e.preventDefault();
             const trade = {
@@ -229,12 +218,11 @@
             };
             trades.push(trade);
             localStorage.setItem('ethTrades', JSON.stringify(trades));
-            e.target.reset();
-            renderTable();
+            e.target.reset(); renderTable();
         }
 
         function deleteTrade(id) {
-            if (confirm("Xóa lệnh này khỏi nhật ký?")) {
+            if (confirm("Xóa lệnh?")) {
                 trades = trades.filter(t => t.id !== id);
                 localStorage.setItem('ethTrades', JSON.stringify(trades));
                 renderTable();
@@ -251,14 +239,14 @@
         function renderTable() {
             const body = document.getElementById('tradeTableBody');
             body.innerHTML = '';
-            const open = trades.filter(t => !t.closeTime);
-            const closed = trades.filter(t => t.closeTime);
-            document.getElementById('countOpen').innerText = open.length;
-            document.getElementById('countClosed').innerText = closed.length;
+            const list = trades.filter(t => currentTab === 'OPEN' ? !t.closeTime : t.closeTime);
+            
+            document.getElementById('countOpen').innerText = trades.filter(t => !t.closeTime).length;
+            document.getElementById('countClosed').innerText = trades.filter(t => t.closeTime).length;
 
-            const list = currentTab === 'OPEN' ? open : closed;
             list.sort((a,b) => b.id - a.id).forEach(t => {
                 const openP = parseFloat(t.openPrice) || 0;
+                const tp = parseFloat(t.takeProfit) || 0;
                 const exitP = t.closeTime ? (parseFloat(t.closePrice) || 0) : currentEthPrice;
                 const vol = parseFloat(t.volume) || 0;
                 
@@ -269,18 +257,17 @@
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-gray-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-3 font-medium">${t.title || '-'}</td>
+                    <td class="p-3 font-medium text-gray-700">${t.title || '-'}</td>
                     <td class="p-3 font-bold ${t.direction === 'MUA' ? 'text-green-600' : 'text-red-600'}">${t.direction}</td>
-                    <td class="p-3 font-medium">${vol}</td>
+                    <td class="p-3">${vol}</td>
                     <td class="p-3 text-gray-500">$${openP.toLocaleString()}</td>
                     <td class="p-3 font-bold ${t.closeTime ? 'text-gray-800' : 'text-blue-500'}">$${exitP.toLocaleString()}</td>
+                    <td class="p-3 text-green-500 font-bold">$${tp > 0 ? tp.toLocaleString() : '-'}</td>
                     <td class="p-3 text-red-400 font-bold">-$${swap.toFixed(2)}</td>
                     <td class="p-3 font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}">
                         ${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}
                     </td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteTrade(${t.id})" class="text-gray-300 hover:text-red-500 text-xl">&times;</button>
-                    </td>
+                    <td class="p-3"><button onclick="deleteTrade(${t.id})" class="text-gray-300 hover:text-red-500">&times;</button></td>
                 `;
                 body.appendChild(tr);
             });
