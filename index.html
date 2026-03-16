@@ -166,7 +166,7 @@
                 localStorage.setItem('geminiApiKey', apiKey.trim());
             }
 
-            status.innerText = "🤖 AI đang quét (Bản ổn định)...";
+            status.innerText = "🤖 Gemini 3.1 đang phân tích...";
             status.classList.remove('hidden', 'text-red-500');
 
             try {
@@ -176,8 +176,8 @@
                     reader.readAsDataURL(file);
                 });
 
-                // DÙNG MODEL PRO VISION (ỔN ĐỊNH NHẤT CHO NHU CẦU ÍT)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`;
+                // GỌI ĐÚNG MODEL GEMINI 3.1 TRONG ẢNH CỦA BẠN
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -185,7 +185,7 @@
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "Đọc ảnh lệnh BingX này và trả về JSON: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
+                                { text: "Đọc ảnh lệnh BingX này và trả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
                                 { inlineData: { data: base64Data, mimeType: file.type } }
                             ]
                         }]
@@ -194,11 +194,8 @@
 
                 const json = await response.json();
                 
-                // NẾU VẪN LỖI 404, LÀ DO KEY CHƯA ACTIVE MODEL
                 if (json.error) {
-                    if (json.error.code === 404) {
-                        throw new Error("Sàn chưa cấp quyền cho Key này. Hãy vào AI Studio tạo Key mới và chọn 'Gemini 1.5 Flash' trong danh sách.");
-                    }
+                    // Nếu model 3.1 lite vẫn báo lỗi, hãy thử gemini-3-flash-preview
                     throw new Error(json.error.message);
                 }
 
@@ -206,6 +203,7 @@
                 rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const d = JSON.parse(rawText);
 
+                // Điền dữ liệu vào form
                 document.getElementById('tradeTitle').value = d.title || "Lệnh từ ảnh";
                 document.getElementById('direction').value = d.direction || "MUA";
                 document.getElementById('volume').value = d.volume || "";
@@ -214,13 +212,13 @@
                 document.getElementById('stopLoss').value = d.stopLoss || "";
                 if (d.openTime) document.getElementById('openTime').value = d.openTime;
 
-                status.innerText = "✅ Xong!";
+                status.innerText = "✅ Quét thành công!";
                 setTimeout(() => status.classList.add('hidden'), 3000);
+
             } catch (e) {
-                status.innerText = "❌ " + e.message;
+                console.error("Lỗi:", e);
+                status.innerText = "❌ Lỗi: " + e.message;
                 status.classList.replace('text-blue-500', 'text-red-500');
-                // Xóa key để nhập cái mới nếu lỗi 404 dai dẳng
-                if (e.message.includes("Sàn chưa cấp quyền")) localStorage.removeItem('geminiApiKey');
             } finally { input.value = ""; }
         }
 
