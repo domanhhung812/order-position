@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Tracker Pro - Final Fix</title>
+    <title>Trading Tracker Pro - AI Fix 100%</title>
     <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        /* Reset bỏ mũi tên tăng giảm của input number cho đẹp */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
@@ -20,30 +19,28 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight underline decoration-blue-500 decoration-4">ETH Journal</h1>
-                <p class="text-slate-500 font-medium">Phí: 0.63$ | Thứ 6: 1.89$ | Trùng ngày: 0$</p>
+                <p class="text-slate-500 font-medium italic">Smarter AI • DD/MM/YY Support</p>
             </div>
-            <div class="glass border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center gap-6">
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Binance Live Price</p>
-                    <p id="ethPrice" class="text-2xl font-bold text-blue-600 tracking-tighter">$0.00</p>
-                </div>
+            <div class="glass border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Binance Live</p>
+                <p id="ethPrice" class="text-2xl font-bold text-blue-600 tracking-tighter">$0.00</p>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-4 space-y-6">
-                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-                    <h3 class="text-lg font-bold mb-6 text-slate-700">✍️ Ghi nhận lệnh</h3>
+            <div class="lg:col-span-4">
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm sticky top-8">
+                    <h3 class="text-lg font-bold mb-6 text-slate-700">✍️ Nhập lệnh mới</h3>
                     
                     <div class="relative group mb-6">
                         <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="simulateImageUpload(this)">
                         <div class="border-2 border-dashed border-slate-200 group-hover:border-blue-400 bg-slate-50 py-4 rounded-xl text-center transition-all">
-                            <span class="text-xs font-bold text-slate-400">TẢI ẢNH BINGX (AI 3.1)</span>
+                            <span class="text-xs font-bold text-slate-400">📸 TẢI ẢNH LỆNH TRADE</span>
                         </div>
                     </div>
 
                     <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-4">
-                        <input type="text" id="tradeTitle" placeholder="Tiêu đề lệnh" class="w-full bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 p-3 rounded-xl text-sm outline-none">
+                        <input type="text" id="tradeTitle" placeholder="Tiêu đề" class="w-full bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 p-3 rounded-xl text-sm outline-none font-medium">
                         
                         <div class="grid grid-cols-2 gap-3">
                             <select id="direction" class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm font-bold outline-none uppercase">
@@ -54,16 +51,16 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" step="0.01" id="openPrice" placeholder="Giá vào" required class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
+                            <input type="number" step="0.01" id="openPrice" placeholder="Giá mở" required class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
                             <input type="number" step="0.01" id="takeProfit" placeholder="TP" class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
                         </div>
 
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Ngày giờ vào lệnh</label>
-                            <input type="datetime-local" id="openTime" step="1" required class="w-full bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none font-medium">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-widest">Thời gian (DD/MM/YY HH:MM:SS)</label>
+                            <input type="datetime-local" id="openTime" step="1" required class="w-full bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none font-bold">
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg active:scale-95">LƯU LỆNH</button>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg active:scale-95 uppercase tracking-wider">Lưu lệnh</button>
                     </form>
                 </div>
             </div>
@@ -75,14 +72,15 @@
                             <thead>
                                 <tr class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-50 bg-slate-50/50">
                                     <th class="px-6 py-5">Chi tiết lệnh</th>
+                                    <th class="px-4 py-5 text-center">Volume</th>
                                     <th class="px-4 py-5">Giá Mở</th>
-                                    <th class="px-4 py-5">Giá Live</th>
+                                    <th class="px-4 py-5 text-blue-600">Giá Live</th>
                                     <th class="px-4 py-5 text-red-500 text-center">Phí</th>
-                                    <th class="px-4 py-5">P&L Net</th>
-                                    <th class="px-4 py-5 text-right"></th>
+                                    <th class="px-4 py-5">Lợi nhuận Net</th>
+                                    <th class="px-4 py-5"></th>
                                 </tr>
                             </thead>
-                            <tbody id="tradeTableBody" class="divide-y divide-slate-50 text-sm"></tbody>
+                            <tbody id="tradeTableBody" class="divide-y divide-slate-50 text-sm italic"></tbody>
                         </table>
                     </div>
                 </div>
@@ -94,7 +92,6 @@
         let currentEthPrice = 0;
         let trades = JSON.parse(localStorage.getItem('ethTrades')) || [];
 
-        // 1. Kết nối giá Binance
         function connectWS() {
             const ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
             ws.onmessage = (e) => {
@@ -109,68 +106,62 @@
         }
         connectWS();
 
-        // 2. AI OCR Xử lý ảnh
         async function simulateImageUpload(input) {
             let apiKey = localStorage.getItem('geminiApiKey');
             if (!apiKey) { apiKey = prompt("Nhập Gemini API Key:"); localStorage.setItem('geminiApiKey', apiKey); }
-            
             const base64 = await new Promise(res => {
                 const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
             });
 
             try {
+                // PROMPT ÉP AI ĐỌC ĐÚNG ĐỊNH DẠNG DD/MM/YY
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [
-                        {text: "Đọc ảnh lệnh BingX trả về JSON raw (không markdown): {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"openTime\":\"YYYY-MM-DDTHH:mm:ss\"}"},
+                        {text: "Nhiệm vụ: OCR ảnh lệnh trade. QUY TẮC:\n1. Open Price: Có dấu phẩy là hàng nghìn, dấu chấm là thập phân. Chuyển về số thuần (VD: 2,185.10 -> 2185.10).\n2. Time Opened: Định dạng DD/MM/YY, HH:MM:SS. Hãy đọc kỹ, số cuối cùng là NĂM (VD: 16/03/26 là ngày 16 tháng 3 năm 2026).\nTrả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"openTime\":\"YYYY-MM-DDTHH:mm:ss\"}"},
                         {inlineData: {data: base64, mimeType: input.files[0].type}}
                     ]}]})
                 });
                 const json = await response.json();
                 const d = JSON.parse(json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
                 
-                // Hàm làm sạch số (đổi dấu phẩy thành dấu chấm)
-                const cleanNum = (v) => v ? String(v).replace(/\./g, '').replace(/,/g, '.') : "";
+                // FIX LỖI SỐ
+                const clean = (v) => v ? String(v).replace(/,/g, '') : "";
 
-                document.getElementById('tradeTitle').value = d.title;
+                document.getElementById('tradeTitle').value = d.title || "BingX Order";
                 document.getElementById('direction').value = d.direction;
-                document.getElementById('volume').value = cleanNum(d.volume);
-                document.getElementById('openPrice').value = cleanNum(d.openPrice);
-                document.getElementById('takeProfit').value = cleanNum(d.takeProfit);
+                document.getElementById('volume').value = clean(d.volume);
+                document.getElementById('openPrice').value = clean(d.openPrice);
+                document.getElementById('takeProfit').value = clean(d.takeProfit);
                 
                 if (d.openTime) {
-                    // Đảm bảo định dạng có đầy đủ Giây để khớp với step="1"
                     let t = d.openTime;
-                    if (t.split(':').length === 2) t += ':00';
+                    // Chống AI đoán nhầm năm 2016
+                    if (t.startsWith("2016")) t = t.replace("2016", "2026");
                     document.getElementById('openTime').value = t;
                 }
-            } catch (e) { alert("Lỗi AI: Vui lòng kiểm tra lại Key hoặc Ảnh"); }
+            } catch (e) { alert("AI chưa đọc được ảnh, vui lòng thử lại!"); }
         }
 
-        // 3. Tính phí qua đêm (Hôm nay = 0)
+        // TÍNH PHÍ: CÙNG NGÀY = 0
         function calculateFee(openTimeStr) {
             if (!openTimeStr) return 0;
             const openDate = new Date(openTimeStr);
-            openDate.setHours(0, 0, 0, 0);
-            
+            openDate.setHours(0,0,0,0);
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
+            today.setHours(0,0,0,0);
             if (today.getTime() === openDate.getTime()) return 0;
 
-            const diffTime = today.getTime() - openDate.getTime();
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-            
-            let totalFee = 0;
+            const diffDays = Math.round((today - openDate) / (1000*60*60*24));
+            let total = 0;
             for (let i = 0; i < diffDays; i++) {
-                let checkDate = new Date(openDate);
-                checkDate.setDate(openDate.getDate() + i);
-                // Thứ 6 x3 (1.89$), ngày khác 0.63$
-                totalFee += (checkDate.getDay() === 5) ? 1.89 : 0.63;
+                let check = new Date(openDate);
+                check.setDate(openDate.getDate() + i);
+                total += (check.getDay() === 5) ? 1.89 : 0.63;
             }
-            return totalFee;
+            return total;
         }
 
         function saveTrade(e) {
@@ -203,33 +194,33 @@
                 const net = pnl - fee;
 
                 body.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition-all">
+                    <tr class="hover:bg-slate-50 transition-all">
                         <td class="px-6 py-5">
-                            <div class="font-bold text-slate-800">${t.title || 'N/A'}</div>
+                            <div class="font-bold text-slate-800 uppercase tracking-tight">${t.title}</div>
                             <div class="text-[9px] font-extrabold px-1.5 py-0.5 rounded w-fit ${t.direction==='MUA'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'} uppercase">
-                                ${t.direction === 'MUA' ? 'Long' : 'Short'} • x${vol}
+                                ${t.direction === 'MUA' ? 'Long' : 'Short'}
                             </div>
                         </td>
-                        <td class="px-4 py-5 font-medium text-slate-400">$${openP.toLocaleString()}</td>
-                        <td class="px-4 py-5 font-bold text-blue-500">$${currentEthPrice.toLocaleString()}</td>
-                        <td class="px-4 py-5 text-center font-bold ${fee > 0 ? 'text-red-400' : 'text-slate-300'}">
-                            ${fee > 0 ? '-$' + fee.toFixed(2) : '$0.00'}
+                        <td class="px-4 py-4 text-center font-bold text-slate-400">${vol}</td>
+                        <td class="px-4 py-4 font-medium text-slate-500">$${openP.toLocaleString()}</td>
+                        <td class="px-4 py-4 font-extrabold text-blue-600">$${currentEthPrice.toLocaleString()}</td>
+                        <td class="px-4 py-5 text-center font-bold ${fee > 0 ? 'text-red-400' : 'text-slate-200'}">
+                            -$${fee.toFixed(2)}
                         </td>
-                        <td class="px-4 py-5">
-                            <div class="font-extrabold ${net>=0?'text-green-500':'text-red-500'}">
+                        <td class="px-4 py-4">
+                            <div class="font-black ${net>=0?'text-green-500':'text-red-500'}">
                                 ${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}
                             </div>
-                            <div class="text-[9px] font-bold text-slate-300 italic">TP: $${t.takeProfit || '-'}</div>
+                            <div class="text-[9px] font-bold text-slate-300">TP: $${t.takeProfit || '-'}</div>
                         </td>
-                        <td class="px-4 py-5 text-right">
-                            <button onclick="deleteTrade(${t.id})" class="text-slate-200 hover:text-red-500 transition-colors">
+                        <td class="px-4 py-4 text-right">
+                            <button onclick="deleteTrade(${t.id})" class="text-slate-200 hover:text-red-500">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </td>
                     </tr>`;
             });
         }
-        renderTable();
     </script>
 </body>
 </html>
