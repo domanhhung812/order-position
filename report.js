@@ -1,55 +1,39 @@
 const axios = require("axios");
 
-const DB_URL = process.env.FIREBASE_URL;
+const FIREBASE_URL = process.env.FIREBASE_URL;
 const TG_TOKEN = process.env.TELEGRAM_TOKEN;
 const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 async function sendReport() {
     try {
-        const response = await axios.get(`${DB_URL}/trades.json`);
+        // Tự động làm sạch link: bỏ dấu gạch chéo thừa và thêm .json
+        const cleanUrl = FIREBASE_URL.replace(/\/+$/, "");
+        const finalUrl = `${cleanUrl}/trades.json`;
+
+        console.log("Đang kết nối tới:", finalUrl);
+
+        const response = await axios.get(finalUrl);
         const trades = response.data ? Object.values(response.data) : [];
         
         const now = new Date();
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        
-        // 1. Lọc lệnh đang mở
         const activeTrades = trades.filter(t => !t.closeTime);
-        
-        // 2. Lọc lệnh đã đóng (Hôm nay + Hôm qua)
         const closedRecent = trades.filter(t => {
             if (!t.closeTime) return false;
             const closeDate = new Date(t.closeTime);
-            // Kiểm tra nếu lệnh đóng trong vòng 48h qua
-            return (now - closeDate) <= (2 * oneDayMs);
+            return (now - closeDate) <= (48 * 60 * 60 * 1000);
         });
 
         let totalPnL = 0;
         closedRecent.forEach(t => {
-            const exitP = parseFloat(t.closePrice);
-            const openP = parseFloat(t.openPrice);
-            const vol = parseFloat(t.volume);
-            const p = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * vol;
+            const p = (t.direction === 'MUA' ? (t.closePrice - t.openPrice) : (t.openPrice - t.closePrice)) * t.volume;
             totalPnL += p;
         });
 
-        // Tạo nội dung tin nhắn
-        let message = `📊 <b>BÁO CÁO TRADING TỔNG HỢP</b>\n`;
-        message += `<i>Cập nhật: ${now.toLocaleString('vi-VN')}</i>\n\n`;
-        
-        message += `🔹 <b>LỆNH ĐANG MỞ (${activeTrades.length}):</b>\n`;
-        if (activeTrades.length > 0) {
-            activeTrades.forEach(t => {
-                message += `- ${t.title} (${t.direction} x${t.volume})\n`;
-            });
-        } else {
-            message += `- Không có lệnh nào đang chạy.\n`;
-        }
-
-        message += `\n✅ <b>ĐÃ ĐÓNG (2 NGÀY GẦN NHẤT):</b>\n`;
-        message += `- Số lệnh: ${closedRecent.length}\n`;
-        message += `- Tổng P&L: <b>${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}</b>\n`;
-
-        message += `\n🚀 <i>Chúc Hưng ngày mới giao dịch thuận lợi!</i>`;
+        let message = `📊 <b>BÁO CÁO TRADING CLOUD</b>\n\n`;
+        message += `🔹 <b>ĐANG MỞ: ${activeTrades.length} lệnh</b>\n`;
+        message += `✅ <b>ĐÃ CHỐT (48H): ${closedRecent.length} lệnh</b>\n`;
+        message += `💰 P&L: <b>$${totalPnL.toFixed(2)}</b>\n\n`;
+        message += `🚀 <i>Hệ thống tự động vận hành</i>`;
 
         await axios.post(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
             chat_id: TG_CHAT_ID,
@@ -57,9 +41,12 @@ async function sendReport() {
             parse_mode: "HTML"
         });
         
-        console.log("Đã gửi báo cáo tổng hợp thành công!");
+        console.log("===> BOT ĐÃ NHẮN TIN THÀNH CÔNG!");
     } catch (error) {
-        console.error("Lỗi:", error.message);
+        console.error("Lỗi chi tiết:", error.response ? error.response.status : error.message);
+        if (error.response && error.response.status === 403) {
+            console.log("LƯU Ý: Vui lòng kiểm tra lại Rules trên Firebase đã Publish chưa.");
+        }
     }
 }
 
