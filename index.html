@@ -3,86 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Tracker Pro - AI Fix 100%</title>
+    <title>Trading Tracker Minimal</title>
     <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #ffffff; 
+            -webkit-font-smoothing: antialiased;
+        }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .editable-title:focus {
+            outline: none;
+            border-bottom: 1px solid #000;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-black">
 
-    <div class="max-w-6xl mx-auto px-4 py-8">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+    <div class="max-w-6xl mx-auto px-6 py-12">
+        <header class="flex justify-between items-end mb-16 border-b border-gray-100 pb-8">
             <div>
-                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight underline decoration-blue-500 decoration-4">ETH Journal</h1>
-                <p class="text-slate-500 font-medium italic">Smarter AI • DD/MM/YY Support</p>
+                <h1 class="text-2xl font-semibold tracking-tight">ETH Journal</h1>
+                <p class="text-gray-400 text-sm mt-1">Track your positions</p>
             </div>
-            <div class="glass border border-slate-200 p-4 rounded-2xl shadow-sm">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Binance Live</p>
-                <p id="ethPrice" class="text-2xl font-bold text-blue-600 tracking-tighter">$0.00</p>
+            <div class="text-right">
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Live Price</p>
+                <p id="ethPrice" class="text-2xl font-light tracking-tighter">0.00</p>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div class="lg:col-span-4">
-                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm sticky top-8">
-                    <h3 class="text-lg font-bold mb-6 text-slate-700">✍️ Nhập lệnh mới</h3>
-                    
-                    <div class="relative group mb-6">
+                <div class="space-y-8">
+                    <div class="relative group">
                         <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="simulateImageUpload(this)">
-                        <div class="border-2 border-dashed border-slate-200 group-hover:border-blue-400 bg-slate-50 py-4 rounded-xl text-center transition-all">
-                            <span class="text-xs font-bold text-slate-400">📸 TẢI ẢNH LỆNH TRADE</span>
+                        <div class="border border-gray-200 py-4 rounded-lg text-center group-hover:bg-gray-50 transition-all">
+                            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Scan BingX Image</span>
                         </div>
                     </div>
 
-                    <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-4">
-                        <input type="text" id="tradeTitle" placeholder="Tiêu đề" class="w-full bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 p-3 rounded-xl text-sm outline-none font-medium">
+                    <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-5">
+                        <div class="space-y-1">
+                            <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Title</label>
+                            <input type="text" id="tradeTitle" placeholder="Position name" class="w-full border-b border-gray-200 py-2 text-sm outline-none focus:border-black transition-all">
+                        </div>
                         
-                        <div class="grid grid-cols-2 gap-3">
-                            <select id="direction" class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm font-bold outline-none uppercase">
-                                <option value="MUA">MUA</option>
-                                <option value="BAN">BÁN</option>
-                            </select>
-                            <input type="number" step="0.0001" id="volume" placeholder="Volume" required class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Side</label>
+                                <select id="direction" class="w-full border-b border-gray-200 py-2 text-sm font-semibold outline-none bg-transparent">
+                                    <option value="MUA">BUY</option>
+                                    <option value="BAN">SELL</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Volume</label>
+                                <input type="number" step="0.0001" id="volume" class="w-full border-b border-gray-200 py-2 text-sm outline-none focus:border-black">
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="number" step="0.01" id="openPrice" placeholder="Giá mở" required class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
-                            <input type="number" step="0.01" id="takeProfit" placeholder="TP" class="bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Open Price</label>
+                                <input type="number" step="0.01" id="openPrice" class="w-full border-b border-gray-200 py-2 text-sm outline-none focus:border-black">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Take Profit</label>
+                                <input type="number" step="0.01" id="takeProfit" class="w-full border-b border-gray-200 py-2 text-sm outline-none focus:border-black">
+                            </div>
                         </div>
 
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-widest">Thời gian (DD/MM/YY HH:MM:SS)</label>
-                            <input type="datetime-local" id="openTime" step="1" required class="w-full bg-slate-50 ring-1 ring-slate-200 p-3 rounded-xl text-sm outline-none font-bold">
+                            <label class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Opened Time</label>
+                            <input type="datetime-local" id="openTime" step="1" required class="w-full border-b border-gray-200 py-2 text-sm outline-none focus:border-black">
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg active:scale-95 uppercase tracking-wider">Lưu lệnh</button>
+                        <button type="submit" class="w-full bg-black text-white py-4 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all active:scale-[0.98]">
+                            Save Position
+                        </button>
                     </form>
                 </div>
             </div>
 
             <div class="lg:col-span-8">
-                <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-50 bg-slate-50/50">
-                                    <th class="px-6 py-5">Chi tiết lệnh</th>
-                                    <th class="px-4 py-5 text-center">Volume</th>
-                                    <th class="px-4 py-5">Giá Mở</th>
-                                    <th class="px-4 py-5 text-blue-600">Giá Live</th>
-                                    <th class="px-4 py-5 text-red-500 text-center">Phí</th>
-                                    <th class="px-4 py-5">Lợi nhuận Net</th>
-                                    <th class="px-4 py-5"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="tradeTableBody" class="divide-y divide-slate-50 text-sm italic"></tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-100">
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Title (Click to edit)</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Side</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold text-right">Size</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold text-right">Entry</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold text-right">Live</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold text-right text-red-400">Fee</th>
+                                <th class="py-4 text-[10px] uppercase tracking-widest text-gray-400 font-semibold text-right">Net P&L</th>
+                                <th class="py-4"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeTableBody" class="divide-y divide-gray-50"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -98,7 +120,7 @@
                 const data = JSON.parse(e.data);
                 if (data.c) {
                     currentEthPrice = parseFloat(data.c);
-                    document.getElementById('ethPrice').innerText = `$${currentEthPrice.toLocaleString()}`;
+                    document.getElementById('ethPrice').innerText = currentEthPrice.toLocaleString();
                     renderTable();
                 }
             };
@@ -108,44 +130,34 @@
 
         async function simulateImageUpload(input) {
             let apiKey = localStorage.getItem('geminiApiKey');
-            if (!apiKey) { apiKey = prompt("Nhập Gemini API Key:"); localStorage.setItem('geminiApiKey', apiKey); }
+            if (!apiKey) { apiKey = prompt("Gemini API Key:"); localStorage.setItem('geminiApiKey', apiKey); }
             const base64 = await new Promise(res => {
                 const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
             });
 
             try {
-                // PROMPT ÉP AI ĐỌC ĐÚNG ĐỊNH DẠNG DD/MM/YY
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [
-                        {text: "Nhiệm vụ: OCR ảnh lệnh trade. QUY TẮC:\n1. Open Price: Có dấu phẩy là hàng nghìn, dấu chấm là thập phân. Chuyển về số thuần (VD: 2,185.10 -> 2185.10).\n2. Time Opened: Định dạng DD/MM/YY, HH:MM:SS. Hãy đọc kỹ, số cuối cùng là NĂM (VD: 16/03/26 là ngày 16 tháng 3 năm 2026).\nTrả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"openTime\":\"YYYY-MM-DDTHH:mm:ss\"}"},
+                        {text: "OCR trade image. Rule: DD/MM/YY HH:MM:SS. Year is last. Numbers: delete thousands comma. JSON: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"openTime\":\"YYYY-MM-DDTHH:mm:ss\"}"},
                         {inlineData: {data: base64, mimeType: input.files[0].type}}
                     ]}]})
                 });
                 const json = await response.json();
                 const d = JSON.parse(json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
                 
-                // FIX LỖI SỐ
                 const clean = (v) => v ? String(v).replace(/,/g, '') : "";
-
                 document.getElementById('tradeTitle').value = d.title || "BingX Order";
-                document.getElementById('direction').value = d.direction;
+                document.getElementById('direction').value = d.direction === "MUA" || d.direction === "BUY" ? "MUA" : "BAN";
                 document.getElementById('volume').value = clean(d.volume);
                 document.getElementById('openPrice').value = clean(d.openPrice);
                 document.getElementById('takeProfit').value = clean(d.takeProfit);
-                
-                if (d.openTime) {
-                    let t = d.openTime;
-                    // Chống AI đoán nhầm năm 2016
-                    if (t.startsWith("2016")) t = t.replace("2016", "2026");
-                    document.getElementById('openTime').value = t;
-                }
-            } catch (e) { alert("AI chưa đọc được ảnh, vui lòng thử lại!"); }
+                if (d.openTime) document.getElementById('openTime').value = d.openTime.replace("2016", "2026");
+            } catch (e) { console.error(e); }
         }
 
-        // TÍNH PHÍ: CÙNG NGÀY = 0
         function calculateFee(openTimeStr) {
             if (!openTimeStr) return 0;
             const openDate = new Date(openTimeStr);
@@ -168,7 +180,7 @@
             e.preventDefault();
             trades.push({
                 id: Date.now(),
-                title: document.getElementById('tradeTitle').value,
+                title: document.getElementById('tradeTitle').value || "Unnamed",
                 direction: document.getElementById('direction').value,
                 volume: document.getElementById('volume').value,
                 openPrice: document.getElementById('openPrice').value,
@@ -179,8 +191,16 @@
             renderTable(); e.target.reset();
         }
 
+        function editTitle(id, newTitle) {
+            const index = trades.findIndex(t => t.id === id);
+            if (index !== -1) {
+                trades[index].title = newTitle;
+                localStorage.setItem('ethTrades', JSON.stringify(trades));
+            }
+        }
+
         function deleteTrade(id) {
-            if(confirm("Xóa lệnh này?")) { trades = trades.filter(t => t.id !== id); localStorage.setItem('ethTrades', JSON.stringify(trades)); renderTable(); }
+            if(confirm("Delete?")) { trades = trades.filter(t => t.id !== id); localStorage.setItem('ethTrades', JSON.stringify(trades)); renderTable(); }
         }
 
         function renderTable() {
@@ -193,34 +213,36 @@
                 const pnl = (t.direction === 'MUA' ? (currentEthPrice - openP) : (openP - currentEthPrice)) * vol;
                 const net = pnl - fee;
 
-                body.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-all">
-                        <td class="px-6 py-5">
-                            <div class="font-bold text-slate-800 uppercase tracking-tight">${t.title}</div>
-                            <div class="text-[9px] font-extrabold px-1.5 py-0.5 rounded w-fit ${t.direction==='MUA'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'} uppercase">
-                                ${t.direction === 'MUA' ? 'Long' : 'Short'}
-                            </div>
-                        </td>
-                        <td class="px-4 py-4 text-center font-bold text-slate-400">${vol}</td>
-                        <td class="px-4 py-4 font-medium text-slate-500">$${openP.toLocaleString()}</td>
-                        <td class="px-4 py-4 font-extrabold text-blue-600">$${currentEthPrice.toLocaleString()}</td>
-                        <td class="px-4 py-5 text-center font-bold ${fee > 0 ? 'text-red-400' : 'text-slate-200'}">
-                            -$${fee.toFixed(2)}
-                        </td>
-                        <td class="px-4 py-4">
-                            <div class="font-black ${net>=0?'text-green-500':'text-red-500'}">
-                                ${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                            </div>
-                            <div class="text-[9px] font-bold text-slate-300">TP: $${t.takeProfit || '-'}</div>
-                        </td>
-                        <td class="px-4 py-4 text-right">
-                            <button onclick="deleteTrade(${t.id})" class="text-slate-200 hover:text-red-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
-                        </td>
-                    </tr>`;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-all";
+                tr.innerHTML = `
+                    <td class="py-5">
+                        <input type="text" value="${t.title}" 
+                            onblur="editTitle(${t.id}, this.value)"
+                            class="editable-title bg-transparent w-full text-sm font-medium border-b border-transparent">
+                    </td>
+                    <td class="py-5">
+                        <span class="text-[10px] font-bold px-2 py-1 rounded ${t.direction==='MUA'?'bg-green-50 text-green-700':'bg-red-50 text-red-700'}">
+                            ${t.direction === 'MUA' ? 'LONG' : 'SHORT'}
+                        </span>
+                    </td>
+                    <td class="py-5 text-right font-medium text-gray-600">${vol}</td>
+                    <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
+                    <td class="py-5 text-right font-medium">$${currentEthPrice.toLocaleString()}</td>
+                    <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
+                    <td class="py-5 text-right font-bold ${net>=0?'text-green-600':'text-red-600'}">
+                        ${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                    </td>
+                    <td class="py-5 text-right">
+                        <button onclick="deleteTrade(${t.id})" class="text-gray-200 hover:text-black transition-colors ml-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
             });
         }
+        renderTable();
     </script>
 </body>
 </html>
