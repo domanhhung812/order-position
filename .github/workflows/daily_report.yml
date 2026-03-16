@@ -21,8 +21,8 @@ jobs:
         run: npm install axios
         
       - name: Run Report Script
+        run: node report.js
         env:
           FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: node report.js
