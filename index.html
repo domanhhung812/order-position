@@ -3,84 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Journal Cloud - Pure Firebase</title>
+    <title>Trading Journal Cloud - Pro Visual</title>
     <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #000; -webkit-font-smoothing: antialiased; }
-        .input-minimal { border-bottom: 1px solid #e5e7eb; transition: border-color 0.2s; background: transparent; }
-        .input-minimal:focus { border-color: #000; outline: none; }
-        .tab-active { border-bottom: 2px solid #000; color: #000; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg-main: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --accent: #000000;
+            --border-soft: #e5e7eb;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        /* Khối Card Trắng */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Input phong cách tối giản nhưng rõ ràng */
+        .input-minimal { 
+            border: 1px solid var(--border-soft); 
+            border-radius: 8px;
+            padding: 10px 12px;
+            transition: all 0.2s; 
+            background: #f9fafb; 
+        }
+        .input-minimal:focus { 
+            border-color: var(--accent); 
+            background: #fff;
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        /* Tab phân cấp */
+        .tab-btn {
+            padding-bottom: 12px;
+            color: var(--text-sub);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .tab-active { 
+            border-bottom-color: var(--accent); 
+            color: var(--accent); 
+        }
+
+        /* Hiệu ứng Row table */
+        .table-row-hover:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Định dạng Badge cho Direction */
+        .direction-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     </style>
 </head>
-<body class="p-8 md:p-16">
+<body class="p-4 md:p-12">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-baseline mb-20 border-b border-gray-50 pb-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="text-3xl font-light tracking-tighter">ETH Cloud Journal</h1>
-                <p class="text-gray-400 text-sm mt-2 font-medium tracking-wide uppercase">Track your positions</p>
+                <h1 class="text-3xl font-bold tracking-tight">ETH Cloud Journal</h1>
+                <p class="text-gray-500 text-sm mt-1">Institutional Grade Tracking</p>
             </div>
-            <div class="text-right">
-                <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-[0.2em]">Binance Live</span>
-                <p id="ethPrice" class="text-3xl font-light tracking-tighter mt-1">0.00</p>
+            <div class="glass-card px-6 py-4 text-right">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Binance Live ETH/USDT</span>
+                <p id="ethPrice" class="text-2xl font-bold tracking-tighter mt-1">0.00</p>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-20">
-            <div class="lg:col-span-4 space-y-12">
-                <div class="relative inline-block w-full border border-gray-100 py-3 text-center rounded-sm">
-                    <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="simulateImageUpload(this)">
-                    <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 font-bold">Scan BingX Position</span>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-8">
+                    <h2 class="text-sm font-bold uppercase tracking-widest mb-6 border-b pb-4">New Position</h2>
+                    
+                    <div class="relative w-full border-2 border-dashed border-gray-200 py-6 text-center rounded-xl hover:border-black transition-colors mb-8">
+                        <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="simulateImageUpload(this)">
+                        <span class="text-xs font-bold uppercase tracking-tight text-gray-500">Scan BingX Screenshot</span>
+                    </div>
 
-                <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-8">
-                    <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Title</label><input type="text" id="tradeTitle" placeholder="Position name" class="input-minimal py-2 text-sm"></div>
-                    <div class="grid grid-cols-2 gap-8">
-                        <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Side</label>
-                        <select id="direction" class="input-minimal py-2 text-sm bg-transparent"><option value="MUA">BUY</option><option value="BAN">SELL</option></select></div>
-                        <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Size</label><input type="number" step="0.0001" id="volume" class="input-minimal py-2 text-sm"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-8">
-                        <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Entry</label><input type="number" step="0.01" id="openPrice" class="input-minimal py-2 text-sm"></div>
-                        <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Take Profit</label><input type="number" step="0.01" id="takeProfit" class="input-minimal py-2 text-sm"></div>
-                    </div>
-                    <div class="flex flex-col"><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Opened Time</label><input type="datetime-local" id="openTime" step="1" required class="input-minimal py-2 text-sm font-medium"></div>
-                    <button type="submit" class="w-full bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-80">Save to Cloud</button>
-                </form>
+                    <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-5">
+                        <div class="flex flex-col">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Trade Label</label>
+                            <input type="text" id="tradeTitle" placeholder="e.g. Scalp Long" class="input-minimal text-sm">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Side</label>
+                                <select id="direction" class="input-minimal text-sm bg-transparent">
+                                    <option value="MUA">BUY</option>
+                                    <option value="BAN">SELL</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Size (ETH)</label>
+                                <input type="number" step="0.0001" id="volume" class="input-minimal text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Entry Price</label>
+                                <input type="number" step="0.01" id="openPrice" class="input-minimal text-sm">
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Take Profit</label>
+                                <input type="number" step="0.01" id="takeProfit" class="input-minimal text-sm">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Opened Time</label>
+                            <input type="datetime-local" id="openTime" step="1" required class="input-minimal text-sm font-medium">
+                        </div>
+
+                        <button type="submit" class="w-full bg-black text-white py-4 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 mt-4">Save Position</button>
+                    </form>
+                </div>
             </div>
 
             <div class="lg:col-span-8">
-                <div class="flex gap-8 mb-12 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                    <button onclick="switchTab('OPEN')" id="tabOpen" class="pb-2 transition-all tab-active">Active (<span id="countOpen">0</span>)</button>
-                    <button onclick="switchTab('CLOSED')" id="tabClosed" class="pb-2 transition-all">Completed (<span id="countClosed">0</span>)</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-[9px] uppercase tracking-[0.2em] text-gray-300 border-b border-gray-50">
-                                <th class="pb-4">Label</th>
-                                <th class="pb-4">Side</th>
-                                <th class="pb-4 text-right">Size</th>
-                                <th class="pb-4 text-right">Entry</th>
-                                <th class="pb-4 text-right">Live/Exit</th>
-                                <th class="pb-4 text-right">Fee</th>
-                                <th class="pb-4 text-right font-bold text-gray-900">Net P&L</th>
-                                <th class="pb-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="tradeTableBody" class="text-sm divide-y divide-gray-50"></tbody>
-                    </table>
+                <div class="glass-card p-8">
+                    <div class="flex gap-8 mb-8 text-xs font-bold uppercase tracking-widest border-b border-gray-100">
+                        <button onclick="switchTab('OPEN')" id="tabOpen" class="tab-btn tab-active">Active Positions (<span id="countOpen">0</span>)</button>
+                        <button onclick="switchTab('CLOSED')" id="tabClosed" class="tab-btn">History (<span id="countClosed">0</span>)</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-[10px] uppercase tracking-widest text-gray-400">
+                                    <th class="pb-4 font-bold">Label</th>
+                                    <th class="pb-4 font-bold">Side</th>
+                                    <th class="pb-4 text-right font-bold">Size</th>
+                                    <th class="pb-4 text-right font-bold">Entry</th>
+                                    <th class="pb-4 text-right font-bold">Live/Exit</th>
+                                    <th class="pb-4 text-right font-bold">Fee</th>
+                                    <th class="pb-4 text-right font-bold text-black">Net P&L</th>
+                                    <th class="pb-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradeTableBody" class="text-sm">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIG FIREBASE ---
+        // --- LOGIC GIỮ NGUYÊN ---
         const firebaseConfig = {
             apiKey: "AIzaSyB8enzjuvFgOSzq_FSu43KXp9q2uGA0wzg",
             authDomain: "eth-trading-812.firebaseapp.com",
@@ -93,7 +190,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. CONFIG TELEGRAM ---
         const TG_TOKEN = ""; // Điền Token
         const TG_CHAT_ID = ""; // Điền ID
 
@@ -101,7 +197,6 @@
         let trades = [];
         let activeTab = 'OPEN';
 
-        // Lấy dữ liệu từ Cloud (Không dùng LocalStorage)
         db.ref('trades').on('value', (snapshot) => {
             const data = snapshot.val();
             trades = data ? Object.values(data) : [];
@@ -142,15 +237,12 @@
             fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`);
         }
 
-        // Báo cáo hàng ngày dùng Cloud để kiểm tra trạng thái
         function checkDailyReport() {
             const todayKey = new Date().toISOString().split('T')[0];
             db.ref('reports/' + todayKey).once('value', (snap) => {
-                if (snap.exists()) return; // Đã báo cáo rồi
-
+                if (snap.exists()) return;
                 const today = new Date().toLocaleDateString();
                 const closedToday = trades.filter(t => t.closeTime && new Date(t.closeTime).toLocaleDateString() === today);
-                
                 if (closedToday.length > 0) {
                     let total = 0;
                     closedToday.forEach(t => {
@@ -164,7 +256,7 @@
         }
 
         async function simulateImageUpload(input) {
-            let key = localStorage.getItem('geminiApiKey'); // Chỉ giữ lại localStorage cho API Key bảo mật
+            let key = localStorage.getItem('geminiApiKey');
             if (!key) { key = prompt("Nhập Gemini Key:"); localStorage.setItem('geminiApiKey', key); }
             const base64 = await new Promise(res => {
                 const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
@@ -222,8 +314,8 @@
 
         function switchTab(tab) {
             activeTab = tab;
-            document.getElementById('tabOpen').className = tab === 'OPEN' ? 'pb-2 transition-all tab-active' : 'pb-2 transition-all';
-            document.getElementById('tabClosed').className = tab === 'CLOSED' ? 'pb-2 transition-all tab-active' : 'pb-2 transition-all';
+            document.getElementById('tabOpen').classList.toggle('tab-active', tab === 'OPEN');
+            document.getElementById('tabClosed').classList.toggle('tab-active', tab === 'CLOSED');
             renderTable();
         }
 
@@ -244,15 +336,27 @@
                 const net = pnl - fee;
 
                 const tr = document.createElement('tr');
+                tr.className = 'table-row-hover transition-colors';
                 tr.innerHTML = `
-                    <td class="py-6"><input type="text" value="${t.title}" onblur="db.ref('trades/'+${t.id}).update({title:this.value})" class="bg-transparent border-none focus:outline-none w-full font-medium"></td>
-                    <td class="py-6 font-semibold text-[10px] tracking-widest ${t.direction === 'MUA' ? 'text-green-500' : 'text-red-500'}">${t.direction === 'MUA' ? 'BUY' : 'SELL'}</td>
-                    <td class="py-6 text-right font-medium text-gray-300">${t.volume}</td>
-                    <td class="py-6 text-right font-medium text-gray-400">$${openP.toLocaleString()}</td>
-                    <td class="py-6 text-right font-medium">$${exitP.toLocaleString()}</td>
-                    <td class="py-6 text-right text-red-300">-$${fee.toFixed(2)}</td>
-                    <td class="py-6 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                    <td class="py-6 text-right"><button onclick="if(confirm('Delete?')){db.ref('trades/'+${t.id}).remove();}" class="opacity-10 hover:opacity-100 transition-opacity">×</button></td>
+                    <td class="py-5 pr-4">
+                        <input type="text" value="${t.title}" onblur="db.ref('trades/'+${t.id}).update({title:this.value})" 
+                        class="bg-transparent border-none focus:outline-none w-full font-bold text-gray-800">
+                    </td>
+                    <td class="py-5">
+                        <span class="direction-badge ${t.direction === 'MUA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${t.direction === 'MUA' ? 'BUY' : 'SELL'}
+                        </span>
+                    </td>
+                    <td class="py-5 text-right font-medium text-gray-500">${t.volume}</td>
+                    <td class="py-5 text-right font-medium text-gray-400">$${openP.toLocaleString()}</td>
+                    <td class="py-5 text-right font-medium text-gray-800">$${exitP.toLocaleString()}</td>
+                    <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
+                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                    </td>
+                    <td class="py-5 text-right">
+                        <button onclick="if(confirm('Delete?')){db.ref('trades/'+${t.id}).remove();}" class="text-gray-300 hover:text-red-500 transition-colors ml-4 text-lg">×</button>
+                    </td>
                 `;
                 body.appendChild(tr);
             });
