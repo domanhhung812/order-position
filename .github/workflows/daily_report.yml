@@ -1,0 +1,28 @@
+name: Daily Trading Report
+
+on:
+  schedule:
+    # 01:00 UTC là 08:00 sáng giờ Việt Nam (UTC+7)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Dòng này cực kỳ quan trọng để Hưng có thể bấm nút chạy thử ngay lập tức
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install axios
+        
+      - name: Run Report Script
+        env:
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node report.js
