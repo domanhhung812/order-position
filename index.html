@@ -127,19 +127,24 @@
             return (new Date(date - tzoffset)).toISOString().slice(0, 16);
         }
 
-        // --- 1. LẤY GIÁ BẰNG API BINANCE (KHÔNG BỊ CHẶN CORS) ---
+        // --- 1. LẤY GIÁ TỪ COINGECKO BẰNG API KEY CỦA BẠN ---
         async function fetchETHPrice() {
             try {
-                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                // Sử dụng chính xác link API bạn cung cấp
+                const url = 'https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=ethereum&x_cg_demo_api_key=CG-63N2dKcq8ET7HVZwcHJ7sbYN';
+                const response = await fetch(url);
                 const data = await response.json();
                 
-                if (data && data.price) {
-                    currentEthPrice = parseFloat(data.price);
+                // Cấu trúc dữ liệu trả về của CoinGecko là: {"ethereum":{"usd": 3500.50}}
+                if (data && data.ethereum && data.ethereum.usd) {
+                    currentEthPrice = parseFloat(data.ethereum.usd);
                     document.getElementById('ethPrice').innerText = `$${currentEthPrice.toFixed(2)}`;
-                    checkTPSL(currentEthPrice); // Gọi logic check TP/SL
+                    
+                    // Kích hoạt chốt lệnh tự động nếu chạm TP/SL
+                    checkTPSL(currentEthPrice); 
                 }
             } catch (error) {
-                console.error("Lỗi lấy giá Binance:", error);
+                console.error("Lỗi lấy giá:", error);
                 document.getElementById('ethPrice').innerText = "Lỗi mạng!";
             }
             renderTable();
