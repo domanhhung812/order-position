@@ -3,107 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Tracker Pro - ETH</title>
+    <title>Trading Tracker - Simple Fix</title>
     <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4 md:p-6 font-sans">
+<body class="bg-gray-100 p-4 font-sans">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm mb-6 border-l-4 border-blue-500">
-            <div>
-                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Nhật Ký ETH</h1>
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-widest">Binance Live | Gemini 3.1</p>
-            </div>
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm mb-6">
+            <h1 class="text-xl font-bold text-gray-800">Nhật Ký Lệnh ETH</h1>
             <div class="text-right">
-                <p class="text-xs text-gray-400 font-bold uppercase">Giá ETH/USDT</p>
-                <p id="ethPrice" class="text-xl md:text-2xl font-bold text-gray-400">Kết nối...</p>
+                <p class="text-xs text-gray-400 font-bold uppercase">Giá Live</p>
+                <p id="ethPrice" class="text-xl font-bold text-blue-600">0.00</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-5 rounded-lg shadow-md lg:col-span-1 h-fit">
-                <h2 class="text-lg font-bold mb-4 border-b pb-2 italic">📌 Thêm Lệnh Mới</h2>
-                
-                <div class="mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                    <input type="file" id="imageInput" accept="image/*" class="text-xs w-full" onchange="simulateImageUpload(this)">
-                    <p id="uploadStatus" class="text-xs text-blue-600 mt-2 hidden font-bold animate-pulse italic">AI đang xử lý ảnh...</p>
-                </div>
-
+            <div class="bg-white p-5 rounded-lg shadow-md lg:col-span-1">
+                <input type="file" id="imageInput" accept="image/*" class="text-xs mb-4 w-full" onchange="simulateImageUpload(this)">
                 <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Tiêu đề</label>
-                        <input type="text" id="tradeTitle" placeholder="Ví dụ: phuongvt" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-
+                    <input type="text" id="tradeTitle" placeholder="Tiêu đề" class="w-full border p-2 rounded text-sm">
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Chiều</label>
-                            <select id="direction" class="w-full border p-2 rounded text-sm font-bold bg-white outline-none">
-                                <option value="MUA" class="text-green-600 font-bold">MUA</option>
-                                <option value="BAN" class="text-red-600 font-bold">BÁN</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Volume</label>
-                            <input type="number" step="0.0001" id="volume" required class="w-full border p-2 rounded text-sm outline-none">
-                        </div>
+                        <select id="direction" class="border p-2 rounded text-sm font-bold">
+                            <option value="MUA">MUA</option>
+                            <option value="BAN">BÁN</option>
+                        </select>
+                        <input type="number" step="0.0001" id="volume" placeholder="Volume" required class="border p-2 rounded text-sm">
                     </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Giá mở cửa</label>
-                        <input type="number" step="0.01" id="openPrice" required class="w-full border p-2 rounded text-sm outline-none">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-green-600 uppercase">Take Profit</label>
-                            <input type="number" step="0.01" id="takeProfit" placeholder="N/A" class="w-full border p-2 rounded text-sm outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-red-600 uppercase">Stop Loss</label>
-                            <input type="number" step="0.01" id="stopLoss" placeholder="N/A" class="w-full border p-2 rounded text-sm outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Thời gian vào lệnh</label>
-                        <input type="datetime-local" id="openTime" required class="w-full border p-2 rounded text-sm outline-none">
-                    </div>
-
-                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition mt-4 shadow-lg active:scale-95">
-                        LƯU LỆNH
-                    </button>
+                    <input type="number" step="0.01" id="openPrice" placeholder="Giá mở" required class="border p-2 rounded text-sm w-full">
+                    <input type="number" step="0.01" id="takeProfit" placeholder="Take Profit" class="border p-2 rounded text-sm w-full">
+                    <label class="text-[10px] font-bold text-gray-400">THỜI GIAN VÀO LỆNH:</label>
+                    <input type="datetime-local" id="openTime" required class="border p-2 rounded text-sm w-full">
+                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded font-bold">LƯU LỆNH</button>
                 </form>
             </div>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md lg:col-span-3">
-                <div class="flex border-b mb-4 space-x-6">
-                    <button id="btnTabOpen" onclick="switchTab('OPEN')" class="pb-2 font-bold text-blue-600 border-b-2 border-blue-600">
-                        Đang mở (<span id="countOpen">0</span>)
-                    </button>
-                    <button id="btnTabClosed" onclick="switchTab('CLOSED')" class="pb-2 font-bold text-gray-400 hover:text-gray-600">
-                        Hoàn thành (<span id="countClosed">0</span>)
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-xs md:text-sm">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-3">Tiêu đề</th>
-                                <th class="p-3">Lệnh</th>
-                                <th class="p-3">Volume</th>
-                                <th class="p-3">Giá mở</th>
-                                <th class="p-3">Giá Live/Chốt</th>
-                                <th class="p-3 text-green-600">TP</th> <th class="p-3 text-red-500">Phí qua đêm</th>
-                                <th class="p-3 text-blue-600 font-bold">Net Profit</th>
-                                <th class="p-3"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="tradeTableBody"></tbody>
-                    </table>
-                </div>
+            <div class="bg-white p-4 rounded-lg shadow-md lg:col-span-3 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 border-b text-gray-600">
+                        <tr>
+                            <th class="p-3">Tiêu đề</th>
+                            <th class="p-3">Lệnh</th>
+                            <th class="p-3">Volume</th>
+                            <th class="p-3">Giá mở</th>
+                            <th class="p-3 text-blue-600">Giá Live</th>
+                            <th class="p-3 text-green-600">TP</th>
+                            <th class="p-3 text-red-500">Phí qua đêm</th>
+                            <th class="p-3 font-bold">Net Profit</th>
+                            <th class="p-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -111,18 +62,15 @@
     <script>
         let currentEthPrice = 0;
         let trades = JSON.parse(localStorage.getItem('ethTrades')) || [];
-        let currentTab = 'OPEN';
 
-        // 1. WEBSOCKET
+        // 1. WebSocket Giá Live
         function connectWS() {
-            const el = document.getElementById('ethPrice');
             const ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
             ws.onmessage = (e) => {
                 const data = JSON.parse(e.data);
                 if (data.c) {
                     currentEthPrice = parseFloat(data.c);
-                    el.innerText = `$${currentEthPrice.toFixed(2)}`;
-                    el.className = "text-xl md:text-2xl font-bold text-green-500 animate-pulse";
+                    document.getElementById('ethPrice').innerText = `$${currentEthPrice.toFixed(2)}`;
                     renderTable();
                 }
             };
@@ -130,149 +78,99 @@
         }
         connectWS();
 
-        // 2. AI OCR
+        // 2. OCR AI (Gemini 3.1)
         async function simulateImageUpload(input) {
-            if (!input.files || !input.files[0]) return;
-            const status = document.getElementById('uploadStatus');
             let apiKey = localStorage.getItem('geminiApiKey');
-            if (!apiKey) {
-                apiKey = prompt("🤖 Nhập Gemini API Key:");
-                if (!apiKey) return;
-                localStorage.setItem('geminiApiKey', apiKey.trim());
-            }
-            status.classList.remove('hidden');
-
-            try {
-                const base64 = await new Promise(res => {
-                    const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
-                });
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{ parts: [
-                            {text: "Đọc ảnh BingX trả về JSON chuẩn (không markdown): {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}"},
-                            {inlineData: {data: base64, mimeType: input.files[0].type}}
-                        ]}]
-                    })
-                });
-                const json = await response.json();
-                let text = json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/g, '').trim();
-                const d = JSON.parse(text);
-                const clean = (v) => v ? String(v).replace(/,/g, '') : "";
-                document.getElementById('tradeTitle').value = d.title || "BingX";
-                document.getElementById('direction').value = d.direction || "MUA";
-                document.getElementById('volume').value = clean(d.volume);
-                document.getElementById('openPrice').value = clean(d.openPrice);
-                document.getElementById('takeProfit').value = clean(d.takeProfit);
-                document.getElementById('stopLoss').value = clean(d.stopLoss);
-                if (d.openTime) document.getElementById('openTime').value = d.openTime;
-                status.innerText = "✅ Xong!";
-            } catch (e) {
-                status.innerText = "❌ Lỗi: " + e.message;
-            } finally { setTimeout(() => status.classList.add('hidden'), 2000); }
+            if (!apiKey) { apiKey = prompt("Nhập API Key:"); localStorage.setItem('geminiApiKey', apiKey); }
+            const base64 = await new Promise(res => {
+                const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.readAsDataURL(input.files[0]);
+            });
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ contents: [{ parts: [
+                    {text: "Đọc ảnh BingX trả về JSON raw (không markdown): {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}"},
+                    {inlineData: {data: base64, mimeType: input.files[0].type}}
+                ]}]})
+            });
+            const json = await response.json();
+            const d = JSON.parse(json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
+            document.getElementById('tradeTitle').value = d.title || "BingX";
+            document.getElementById('direction').value = d.direction || "MUA";
+            document.getElementById('volume').value = String(d.volume).replace(/,/g, '');
+            document.getElementById('openPrice').value = String(d.openPrice).replace(/,/g, '');
+            document.getElementById('takeProfit').value = String(d.takeProfit).replace(/,/g, '');
+            document.getElementById('openTime').value = d.openTime;
         }
 
-        // 3. LOGIC TÍNH PHÍ (ĐÃ FIX TRIỆT ĐỂ)
-        function calculateTotalSwap(openTimeStr, closeTimeStr) {
+        // 3. CÔNG THỨC TÍNH PHÍ SIÊU ĐƠN GIẢN
+        function calculateFee(openTimeStr) {
             if (!openTimeStr) return 0;
-            const start = new Date(openTimeStr);
-            const end = closeTimeStr ? new Date(closeTimeStr) : new Date();
+            const openDate = new Date(openTimeStr);
+            const now = new Date();
             
-            // 1. Chỉ tính số đêm trôi qua (set về 0h ngày hôm đó)
-            const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-            const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            // Tính số đêm (Số ngày chênh lệch)
+            const diffMs = now.getTime() - openDate.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             
-            // Tính tổng số ngày chênh lệch
-            const diffDays = Math.floor((d2 - d1) / (24 * 60 * 60 * 1000));
             if (diffDays <= 0) return 0;
 
-            // 2. Đếm có bao nhiêu ngày Thứ 6 nằm giữa d1 và d2
+            // Tính số Thứ 6 nằm trong khoảng đó
             let fridays = 0;
-            for (let i = 0; i < diffDays; i++) {
-                let checkDate = new Date(d1);
-                checkDate.setDate(d1.getDate() + i);
-                if (checkDate.getDay() === 5) { // Thứ 6
+            for (let i = 1; i <= diffDays; i++) {
+                let check = new Date(openDate);
+                check.setDate(openDate.getDate() + i);
+                if (check.getDay() === 6) { // Nếu ngày mới là Thứ 7, nghĩa là vừa qua đêm Thứ 6
                     fridays++;
                 }
             }
 
-            // 3. Tính tiền: Ngày thường 0.63, Thứ 6 x 3 (tức là + thêm 2 lần phí nữa)
-            // Fee = (Tổng ngày * 0.63) + (Số Thứ 6 * 1.26)
+            // Phí = (Số ngày * 0.63) + (Số ngày Thứ 6 * 1.26)
             return (diffDays * 0.63) + (fridays * 1.26);
         }
 
         function saveTrade(e) {
             e.preventDefault();
-            const trade = {
+            trades.push({
                 id: Date.now(),
                 title: document.getElementById('tradeTitle').value,
                 direction: document.getElementById('direction').value,
                 volume: document.getElementById('volume').value,
                 openPrice: document.getElementById('openPrice').value,
                 takeProfit: document.getElementById('takeProfit').value,
-                stopLoss: document.getElementById('stopLoss').value,
-                openTime: document.getElementById('openTime').value,
-                closePrice: "", closeTime: ""
-            };
-            trades.push(trade);
+                openTime: document.getElementById('openTime').value
+            });
             localStorage.setItem('ethTrades', JSON.stringify(trades));
-            e.target.reset(); renderTable();
-        }
-
-        function deleteTrade(id) {
-            if (confirm("Xóa lệnh?")) {
-                trades = trades.filter(t => t.id !== id);
-                localStorage.setItem('ethTrades', JSON.stringify(trades));
-                renderTable();
-            }
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            document.getElementById('btnTabOpen').className = tab === 'OPEN' ? "pb-2 font-bold text-blue-600 border-b-2 border-blue-600" : "pb-2 font-bold text-gray-400";
-            document.getElementById('btnTabClosed').className = tab === 'CLOSED' ? "pb-2 font-bold text-blue-600 border-b-2 border-blue-600" : "pb-2 font-bold text-gray-400";
             renderTable();
         }
+
+        function deleteTrade(id) { trades = trades.filter(t => t.id !== id); localStorage.setItem('ethTrades', JSON.stringify(trades)); renderTable(); }
 
         function renderTable() {
             const body = document.getElementById('tradeTableBody');
             body.innerHTML = '';
-            const list = trades.filter(t => currentTab === 'OPEN' ? !t.closeTime : t.closeTime);
-            
-            document.getElementById('countOpen').innerText = trades.filter(t => !t.closeTime).length;
-            document.getElementById('countClosed').innerText = trades.filter(t => t.closeTime).length;
-
-            list.sort((a,b) => b.id - a.id).forEach(t => {
+            trades.forEach(t => {
                 const openP = parseFloat(t.openPrice) || 0;
-                const tp = parseFloat(t.takeProfit) || 0;
-                const exitP = t.closeTime ? (parseFloat(t.closePrice) || 0) : currentEthPrice;
                 const vol = parseFloat(t.volume) || 0;
-                
-                const swap = calculateTotalSwap(t.openTime, t.closeTime);
-                let pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * vol;
-                const netProfit = pnl - swap;
+                const fee = calculateFee(t.openTime);
+                const pnl = (t.direction === 'MUA' ? (currentEthPrice - openP) : (openP - currentEthPrice)) * vol;
+                const net = pnl - fee;
 
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-gray-700">${t.title || '-'}</td>
-                    <td class="p-3 font-bold ${t.direction === 'MUA' ? 'text-green-600' : 'text-red-600'}">${t.direction}</td>
-                    <td class="p-3">${vol}</td>
-                    <td class="p-3 text-gray-500">$${openP.toLocaleString()}</td>
-                    <td class="p-3 font-bold ${t.closeTime ? 'text-gray-800' : 'text-blue-500'}">$${exitP.toLocaleString()}</td>
-                    <td class="p-3 text-green-500 font-bold">$${tp > 0 ? tp.toLocaleString() : '-'}</td>
-                    <td class="p-3 text-red-400 font-bold">-$${swap.toFixed(2)}</td>
-                    <td class="p-3 font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}">
-                        ${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                    </td>
-                    <td class="p-3"><button onclick="deleteTrade(${t.id})" class="text-gray-300 hover:text-red-500">&times;</button></td>
-                `;
-                body.appendChild(tr);
+                body.innerHTML += `
+                    <tr class="border-b text-center">
+                        <td class="p-3">${t.title}</td>
+                        <td class="p-3 font-bold ${t.direction==='MUA'?'text-green-600':'text-red-600'}">${t.direction}</td>
+                        <td class="p-3">${vol}</td>
+                        <td class="p-3">$${openP.toFixed(2)}</td>
+                        <td class="p-3 text-blue-500 font-bold">$${currentEthPrice.toFixed(2)}</td>
+                        <td class="p-3 text-green-500">$${t.takeProfit || '-'}</td>
+                        <td class="p-3 text-red-400">-$${fee.toFixed(2)}</td>
+                        <td class="p-3 font-bold ${net>=0?'text-green-600':'text-red-600'}">$${net.toFixed(2)}</td>
+                        <td class="p-3"><button onclick="deleteTrade(${t.id})" class="text-gray-300">X</button></td>
+                    </tr>`;
             });
         }
-        renderTable();
     </script>
 </body>
 </html>
