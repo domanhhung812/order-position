@@ -3,118 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETH Live Trade Tracker PRO</title>
+    <title>ETH Trading Tracker - Gemini AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 </head>
-<body class="bg-gray-100 p-6 font-sans">
+<body class="bg-gray-100 p-4 md:p-6 font-sans">
 
-    <div class="max-w-full mx-auto">
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm mb-6 border-l-4 border-blue-500">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Nhật Ký Giao Dịch ETH</h1>
-                <p class="text-sm text-gray-500">Tự động chốt lệnh khi chạm TP/SL (Cập nhật Live)</p>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Nhật Ký Giao Dịch ETH</h1>
+                <p class="text-xs text-gray-500">WebSocket Binance Futures | Gemini AI OCR</p>
             </div>
             <div class="text-right">
-                <p class="text-sm text-gray-500">Giá ETH (Live)</p>
-                <p id="ethPrice" class="text-2xl font-bold text-gray-400">Đang kết nối...</p>
+                <p class="text-xs text-gray-400">Giá ETH Live (Binance)</p>
+                <p id="ethPrice" class="text-xl md:text-2xl font-bold text-gray-400">Đang nối...</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 h-fit">
-                <h2 class="text-lg font-bold mb-4 border-b pb-2">Thêm Lệnh Mới</h2>
+            <div class="bg-white p-5 rounded-lg shadow-md lg:col-span-1 h-fit">
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Lệnh Mới</h2>
                 
                 <div class="mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                    <p class="text-sm text-gray-500 mb-2">Tải ảnh lên để tự động điền</p>
-                    <input type="file" id="imageInput" accept="image/*" class="text-sm w-full" onchange="simulateImageUpload(this)">
-                    <p id="uploadStatus" class="text-xs text-blue-500 mt-2 hidden">Đang đọc dữ liệu...</p>
+                    <p class="text-xs text-gray-500 mb-2 font-medium">QUÉT ẢNH BINGX (AI)</p>
+                    <input type="file" id="imageInput" accept="image/*" class="text-xs w-full" onchange="simulateImageUpload(this)">
+                    <p id="uploadStatus" class="text-xs text-blue-500 mt-2 hidden italic">Đang phân tích...</p>
                 </div>
 
-                <form id="tradeForm" onsubmit="saveTrade(event)">
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium text-gray-700">Tiêu đề / Ghi chú</label>
-                        <input type="text" id="tradeTitle" placeholder="VD: Bắt đáy H4..." class="w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500">
+                <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase">Tiêu đề</label>
+                        <input type="text" id="tradeTitle" placeholder="Ghi chú lệnh..." class="w-full border p-2 rounded text-sm">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-sm font-medium">Chiều</label>
-                            <select id="direction" class="w-full border p-2 rounded bg-gray-50">
-                                <option value="MUA">MUA</option>
-                                <option value="BAN">BÁN</option>
+                            <label class="block text-xs font-bold text-gray-600 uppercase">Chiều</label>
+                            <select id="direction" class="w-full border p-2 rounded text-sm font-bold bg-white">
+                                <option value="MUA" class="text-green-600">MUA (LONG)</option>
+                                <option value="BAN" class="text-red-600">BÁN (SHORT)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Volume</label>
-                            <input type="number" step="0.01" id="volume" required class="w-full border p-2 rounded">
+                            <label class="block text-xs font-bold text-gray-600 uppercase">Volume</label>
+                            <input type="number" step="0.0001" id="volume" required class="w-full border p-2 rounded text-sm">
                         </div>
                     </div>
 
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium">Giá mở</label>
-                        <input type="number" step="0.01" id="openPrice" required class="w-full border p-2 rounded">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase">Giá mở</label>
+                        <input type="number" step="0.01" id="openPrice" required class="w-full border p-2 rounded text-sm">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-sm font-medium text-green-600">Take Profit (TP)</label>
-                            <input type="number" step="0.01" id="takeProfit" class="w-full border p-2 rounded placeholder-gray-300" placeholder="Tùy chọn">
+                            <label class="block text-xs font-bold text-green-600 uppercase">TP</label>
+                            <input type="number" step="0.01" id="takeProfit" placeholder="N/A" class="w-full border p-2 rounded text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-red-600">Stop Loss (SL)</label>
-                            <input type="number" step="0.01" id="stopLoss" class="w-full border p-2 rounded placeholder-gray-300" placeholder="Tùy chọn">
+                            <label class="block text-xs font-bold text-red-600 uppercase">SL</label>
+                            <input type="number" step="0.01" id="stopLoss" placeholder="N/A" class="w-full border p-2 rounded text-sm">
                         </div>
                     </div>
 
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium">Thời gian mở</label>
-                        <input type="datetime-local" id="openTime" required class="w-full border p-2 rounded">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase">Thời gian mở</label>
+                        <input type="datetime-local" id="openTime" required class="w-full border p-2 rounded text-sm">
                     </div>
                     
-                    <hr class="my-3">
-
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium text-gray-700">Giá đóng <span class="text-xs font-normal">(Bỏ trống = Đang mở)</span></label>
-                        <input type="number" step="0.01" id="closePrice" class="w-full border p-2 rounded bg-gray-50">
+                    <div class="pt-2 border-t mt-4">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Chốt lệnh thủ công (Nếu có)</label>
+                        <div class="grid grid-cols-2 gap-2 mt-1">
+                            <input type="number" step="0.01" id="closePrice" placeholder="Giá đóng" class="border p-2 rounded text-sm bg-gray-50">
+                            <input type="datetime-local" id="closeTime" class="border p-2 rounded text-sm bg-gray-50">
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Thời gian đóng</label>
-                        <input type="datetime-local" id="closeTime" class="w-full border p-2 rounded bg-gray-50">
-                    </div>
-
-                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded font-bold hover:bg-blue-700 transition">Lưu Lệnh</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition mt-4 shadow-lg shadow-blue-200">
+                        LƯU LỆNH
+                    </button>
                 </form>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-3 overflow-hidden flex flex-col">
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md lg:col-span-3 flex flex-col">
                 <div class="flex border-b mb-4">
-                    <button id="btnTabOpen" onclick="switchTab('OPEN')" class="px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 focus:outline-none transition-colors">
+                    <button id="btnTabOpen" onclick="switchTab('OPEN')" class="px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600">
                         Đang mở (<span id="countOpen">0</span>)
                     </button>
-                    <button id="btnTabClosed" onclick="switchTab('CLOSED')" class="px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 focus:outline-none transition-colors">
+                    <button id="btnTabClosed" onclick="switchTab('CLOSED')" class="px-4 py-2 font-bold text-gray-400 hover:text-gray-600">
                         Hoàn thành (<span id="countClosed">0</span>)
                     </button>
                 </div>
 
-                <div class="overflow-x-auto flex-1">
-                    <table class="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-100 border-b">
+                <div class="overflow-x-auto overflow-y-auto max-h-[600px]">
+                    <table class="min-w-full text-left text-sm">
+                        <thead class="bg-gray-50 border-b sticky top-0">
                             <tr>
-                                <th class="p-3">Tiêu đề</th> <th class="p-3">Chiều</th>
-                                <th class="p-3">Vol</th>
+                                <th class="p-3">Tiêu đề</th>
+                                <th class="p-3">Lệnh</th>
+                                <th class="p-3">Volume</th>
                                 <th class="p-3">Giá mở</th>
-                                <th class="p-3 text-green-600">TP</th>
-                                <th class="p-3 text-red-600">SL</th>
-                                <th class="p-3">Giá <span id="thPriceType">Live</span></th>
-                                <th class="p-3">Thời gian</th>
-                                <th class="p-3 text-orange-500">Phí Swap</th>
+                                <th class="p-3">Giá Live/Chốt</th>
                                 <th class="p-3 text-blue-600">Net Profit</th>
+                                <th class="p-3 text-gray-400">TP/SL</th>
                                 <th class="p-3"></th>
                             </tr>
                         </thead>
-                        <tbody id="tradeTableBody">
-                            </tbody>
+                        <tbody id="tradeTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -131,320 +127,193 @@
             return (new Date(date - tzoffset)).toISOString().slice(0, 16);
         }
 
-        // --- 1. LẤY GIÁ BẰNG WEBSOCKET (REAL-TIME CHUẨN) ---
-        let ws;
-
+        // --- 1. WEBSOCKET BINANCE (LẤY GIÁ LIVE) ---
         function connectWebSocket() {
             const priceElement = document.getElementById('ethPrice');
-
-            ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
-
-            ws.onopen = () => {
-                console.log("Đã kết nối luồng Live!");
-            };
+            const ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data && data.c) { 
                     currentEthPrice = parseFloat(data.c);
-                    
                     priceElement.innerText = `$${currentEthPrice.toFixed(2)}`;
-                    priceElement.classList.remove("text-gray-400", "text-red-500");
-                    priceElement.classList.add("text-green-600");
+                    priceElement.className = "text-xl md:text-2xl font-bold text-green-500 animate-pulse";
                     
                     checkTPSL(currentEthPrice); 
                     
-                    // Render 1 giây/lần để Net Profit nhảy liên tục
-                    if (!ws.lastRender || Date.now() - ws.lastRender > 1000) {
+                    if (!ws.lastR || Date.now() - ws.lastR > 1000) {
                         renderTable();
-                        ws.lastRender = Date.now();
+                        ws.lastR = Date.now();
                     }
                 }
             };
-
-            ws.onerror = (error) => {
-                priceElement.innerText = "Mất kết nối!";
-                priceElement.classList.replace("text-green-600", "text-red-500");
-            };
-
-            ws.onclose = () => {
-                setTimeout(connectWebSocket, 3000); 
-            };
+            ws.onclose = () => setTimeout(connectWebSocket, 3000);
+            ws.onerror = () => priceElement.innerText = "Lỗi kết nối!";
         }
-
         connectWebSocket();
 
-        // --- 2. HÀM TỰ ĐỘNG KIỂM TRA TP/SL ---
-        function checkTPSL(livePrice) {
-            let hasUpdated = false;
+        // --- 2. AI QUÉT ẢNH (GEMINI API) ---
+        async function simulateImageUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const status = document.getElementById('uploadStatus');
+            let apiKey = localStorage.getItem('geminiApiKey');
 
-            trades.forEach(trade => {
-                if (!trade.closeTime) {
-                    let tp = parseFloat(trade.takeProfit);
-                    let sl = parseFloat(trade.stopLoss);
-                    let isHit = false;
-                    let hitPrice = 0;
-                    let reason = "";
+            if (!apiKey) {
+                apiKey = prompt("🤖 Nhập Gemini API Key (từ aistudio.google.com):");
+                if (!apiKey) return;
+                localStorage.setItem('geminiApiKey', apiKey.trim());
+            }
 
-                    if (trade.direction === 'MUA') {
-                        if (tp && livePrice >= tp) { isHit = true; hitPrice = tp; reason = "Take Profit"; }
-                        else if (sl && livePrice <= sl) { isHit = true; hitPrice = sl; reason = "Stop Loss"; }
-                    } else if (trade.direction === 'BAN') {
-                        if (tp && livePrice <= tp) { isHit = true; hitPrice = tp; reason = "Take Profit"; }
-                        else if (sl && livePrice >= sl) { isHit = true; hitPrice = sl; reason = "Stop Loss"; }
+            status.innerText = "🤖 AI đang phân tích ảnh...";
+            status.classList.remove('hidden', 'text-red-500');
+            status.classList.add('text-blue-500');
+
+            try {
+                const base64Data = await new Promise((res) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => res(reader.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Bạn là OCR tài chính. Đọc ảnh BingX và trả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
+                                { inlineData: { data: base64Data, mimeType: file.type } }
+                            ]
+                        }]
+                    })
+                });
+
+                const json = await response.json();
+                if (json.error) throw new Error(json.error.message);
+
+                let rawText = json.candidates[0].content.parts[0].text;
+                rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const d = JSON.parse(rawText);
+
+                document.getElementById('tradeTitle').value = d.title || "Lệnh từ ảnh";
+                document.getElementById('direction').value = d.direction || "MUA";
+                document.getElementById('volume').value = d.volume || "";
+                document.getElementById('openPrice').value = d.openPrice || "";
+                document.getElementById('takeProfit').value = d.takeProfit || "";
+                document.getElementById('stopLoss').value = d.stopLoss || "";
+                if (d.openTime) document.getElementById('openTime').value = d.openTime;
+
+                status.innerText = "✅ Thành công!";
+                status.classList.replace('text-blue-500', 'text-green-500');
+                setTimeout(() => status.classList.add('hidden'), 3000);
+            } catch (e) {
+                status.innerText = "❌ Lỗi: " + e.message;
+                status.classList.replace('text-blue-500', 'text-red-500');
+                if (e.message.includes("key")) localStorage.removeItem('geminiApiKey');
+            } finally { input.value = ""; }
+        }
+
+        // --- 3. LOGIC GIAO DỊCH ---
+        function checkTPSL(price) {
+            let changed = false;
+            trades.forEach(t => {
+                if (!t.closeTime) {
+                    let tp = parseFloat(t.takeProfit), sl = parseFloat(t.stopLoss);
+                    let hit = false, hitP = 0;
+                    if (t.direction === 'MUA') {
+                        if (tp && price >= tp) { hit = true; hitP = tp; }
+                        else if (sl && price <= sl) { hit = true; hitP = sl; }
+                    } else {
+                        if (tp && price <= tp) { hit = true; hitP = tp; }
+                        else if (sl && price >= sl) { hit = true; hitP = sl; }
                     }
-
-                    if (isHit) {
-                        trade.closePrice = hitPrice.toString(); 
-                        trade.closeTime = formatInputDate(new Date()); 
-                        hasUpdated = true;
-                        
-                        // Thông báo ra màn hình kèm Tiêu đề lệnh
-                        let titleMsg = trade.title ? `[${trade.title}]` : '';
-                        alert(`🚀 Lệnh ${titleMsg} ${trade.direction} ${trade.volume} ETH đã chạm ${reason} tại $${hitPrice}!`);
+                    if (hit) {
+                        t.closePrice = hitP; t.closeTime = formatInputDate(new Date());
+                        changed = true;
+                        alert(`🚀 Chốt lệnh: ${t.title || ''} tại $${hitP}`);
                     }
                 }
             });
-
-            if (hasUpdated) {
-                localStorage.setItem('ethTrades', JSON.stringify(trades));
-                renderTable(); 
-            }
+            if (changed) { localStorage.setItem('ethTrades', JSON.stringify(trades)); renderTable(); }
         }
 
-        // --- 3. TÍNH TOÁN PHÍ SWAP ($0.63/ngày) ---
-        function calculateSwapFee(openTimeStr, closeTimeStr) {
-            let start = new Date(openTimeStr);
-            let end = closeTimeStr ? new Date(closeTimeStr) : new Date(); 
-            let swapFee = 0;
-
-            let current = new Date(start);
-            current.setHours(0,0,0,0);
-            let endDay = new Date(end);
-            endDay.setHours(0,0,0,0);
-
-            while(current < endDay) {
-                if(current.getDay() === 5) { 
-                    swapFee += (0.63 * 3);
-                } else {
-                    swapFee += 0.63; 
-                }
-                current.setDate(current.getDate() + 1);
+        function calculateSwap(startStr, endStr) {
+            let start = new Date(startStr), end = endStr ? new Date(endStr) : new Date();
+            let fee = 0, curr = new Date(start); curr.setHours(0,0,0,0);
+            let stop = new Date(end); stop.setHours(0,0,0,0);
+            while(curr < stop) {
+                fee += (curr.getDay() === 5) ? 1.89 : 0.63; // Phí giả định
+                curr.setDate(curr.getDate() + 1);
             }
-            return swapFee;
+            return fee;
         }
 
-        // --- 4. GIAO DIỆN TABS ---
-        function switchTab(tab) {
-            currentTab = tab;
-            
-            const btnOpen = document.getElementById('btnTabOpen');
-            const btnClosed = document.getElementById('btnTabClosed');
-            
-            if(tab === 'OPEN') {
-                btnOpen.className = "px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 focus:outline-none transition-colors";
-                btnClosed.className = "px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 focus:outline-none transition-colors";
-                document.getElementById('thPriceType').innerText = "Live";
-            } else {
-                btnClosed.className = "px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 focus:outline-none transition-colors";
-                btnOpen.className = "px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 focus:outline-none transition-colors";
-                document.getElementById('thPriceType').innerText = "Chốt";
-            }
-            
-            renderTable();
-        }
-
-        // --- 5. LƯU & XÓA LỆNH ---
         function saveTrade(e) {
             e.preventDefault();
-            const closeTimeVal = document.getElementById('closeTime').value;
-            const closePriceVal = document.getElementById('closePrice').value;
-            
+            const cp = document.getElementById('closePrice').value;
+            const ct = document.getElementById('closeTime').value;
             const trade = {
                 id: Date.now(),
-                title: document.getElementById('tradeTitle').value, // LƯU TIÊU ĐỀ
+                title: document.getElementById('tradeTitle').value,
                 direction: document.getElementById('direction').value,
                 volume: document.getElementById('volume').value,
                 openPrice: document.getElementById('openPrice').value,
                 takeProfit: document.getElementById('takeProfit').value,
                 stopLoss: document.getElementById('stopLoss').value,
                 openTime: document.getElementById('openTime').value,
-                closePrice: (closePriceVal && closeTimeVal) ? closePriceVal : "",
-                closeTime: (closePriceVal && closeTimeVal) ? closeTimeVal : "",
+                closePrice: cp && ct ? cp : "",
+                closeTime: cp && ct ? ct : ""
             };
-
             trades.push(trade);
             localStorage.setItem('ethTrades', JSON.stringify(trades));
-            
-            if (trade.closeTime) switchTab('CLOSED');
-            else renderTable();
-            
-            e.target.reset();
+            e.target.reset(); renderTable();
         }
 
         function deleteTrade(id) {
-            if(confirm("Bạn có chắc muốn xóa lệnh này?")) {
-                trades = trades.filter(t => t.id !== id);
-                localStorage.setItem('ethTrades', JSON.stringify(trades));
-                renderTable();
-            }
+            if(confirm("Xóa lệnh?")) { trades = trades.filter(t => t.id !== id); localStorage.setItem('ethTrades', JSON.stringify(trades)); renderTable(); }
         }
 
-        // --- 6. RENDER BẢNG THEO TAB ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('btnTabOpen').className = tab === 'OPEN' ? "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600" : "px-4 py-2 font-bold text-gray-400";
+            document.getElementById('btnTabClosed').className = tab === 'CLOSED' ? "px-4 py-2 font-bold text-blue-600 border-b-2 border-blue-600" : "px-4 py-2 font-bold text-gray-400";
+            renderTable();
+        }
+
         function renderTable() {
-            const tbody = document.getElementById('tradeTableBody');
-            tbody.innerHTML = '';
-            
-            const openTrades = trades.filter(t => !t.closeTime);
-            const closedTrades = trades.filter(t => t.closeTime);
-            
-            document.getElementById('countOpen').innerText = openTrades.length;
-            document.getElementById('countClosed').innerText = closedTrades.length;
+            const body = document.getElementById('tradeTableBody');
+            body.innerHTML = '';
+            const open = trades.filter(t => !t.closeTime);
+            const closed = trades.filter(t => t.closeTime);
+            document.getElementById('countOpen').innerText = open.length;
+            document.getElementById('countClosed').innerText = closed.length;
 
-            let displayTrades = currentTab === 'OPEN' ? openTrades : closedTrades;
-            displayTrades.sort((a, b) => b.id - a.id);
+            const list = currentTab === 'OPEN' ? open : closed;
+            list.sort((a,b) => b.id - a.id).forEach(t => {
+                const swap = calculateSwap(t.openTime, t.closeTime);
+                const exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
+                const openP = parseFloat(t.openPrice);
+                const vol = parseFloat(t.volume);
+                const profit = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * vol - swap;
 
-            if (displayTrades.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="p-6 text-center text-gray-400 italic">Không có lệnh nào ở đây.</td></tr>`;
-                return;
-            }
-
-            displayTrades.forEach(trade => {
                 const tr = document.createElement('tr');
-                const isClosed = trade.closeTime ? true : false;
-                tr.className = `border-b hover:bg-gray-50 ${isClosed ? 'bg-gray-50' : 'bg-white'}`;
-
-                let swapFee = calculateSwapFee(trade.openTime, trade.closeTime);
-                let swapDisplay = swapFee === 0 ? "$0.00" : `-$${swapFee.toFixed(2)}`;
-
-                let exitPrice = isClosed ? parseFloat(trade.closePrice) : currentEthPrice;
-                let openPrice = parseFloat(trade.openPrice);
-                let vol = parseFloat(trade.volume);
-                
-                let grossProfit = 0;
-                if (exitPrice > 0) {
-                    if (trade.direction === 'MUA') {
-                        grossProfit = (exitPrice - openPrice) * vol;
-                    } else { 
-                        grossProfit = (openPrice - exitPrice) * vol;
-                    }
-                }
-
-                let netProfit = grossProfit - swapFee;
-                let netClass = netProfit >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold";
-                let netSign = netProfit > 0 ? "+" : "";
-
-                let priceDisplay = isClosed 
-                    ? `$${parseFloat(trade.closePrice).toFixed(2)}` 
-                    : `<span class="text-blue-500 animate-pulse font-bold">$${exitPrice.toFixed(2)}</span>`;
-                
-                let timeDisplay = isClosed 
-                    ? `<div><span class="text-xs text-gray-400">M: </span>${trade.openTime.replace('T', ' ')}</div>
-                       <div><span class="text-xs text-gray-400">Đ: </span>${trade.closeTime.replace('T', ' ')}</div>` 
-                    : `${trade.openTime.replace('T', ' ')}`;
-
-                // Hiển thị Tiêu đề (nếu không nhập thì để dấu - )
-                let titleDisplay = trade.title ? trade.title : '-';
-
+                tr.className = "border-b hover:bg-gray-50 transition";
                 tr.innerHTML = `
-                    <td class="p-3 font-medium text-gray-800 max-w-[150px] truncate" title="${titleDisplay}">${titleDisplay}</td>
-                    <td class="p-3 font-bold ${trade.direction === 'MUA' ? 'text-green-600' : 'text-red-600'}">
-                        ${trade.direction}
-                    </td>
-                    <td class="p-3">${trade.volume}</td>
-                    <td class="p-3">$${openPrice.toFixed(2)}</td>
-                    <td class="p-3 text-green-600">${trade.takeProfit ? '$'+trade.takeProfit : '-'}</td>
-                    <td class="p-3 text-red-600">${trade.stopLoss ? '$'+trade.stopLoss : '-'}</td>
-                    <td class="p-3 font-medium">${priceDisplay}</td>
-                    <td class="p-3 text-xs text-gray-600">${timeDisplay}</td>
-                    <td class="p-3 text-orange-500 font-medium">${swapDisplay}</td>
-                    <td class="p-3 ${netClass} text-base bg-gray-50/50">${netSign}$${netProfit.toFixed(2)}</td>
-                    <td class="p-3"><button onclick="deleteTrade(${trade.id})" class="text-gray-400 hover:text-red-500 text-xl">&times;</button></td>
+                    <td class="p-3 font-medium">${t.title || '-'}</td>
+                    <td class="p-3 font-bold ${t.direction === 'MUA' ? 'text-green-600' : 'text-red-600'}">${t.direction}</td>
+                    <td class="p-3">${vol}</td>
+                    <td class="p-3">$${openP.toFixed(2)}</td>
+                    <td class="p-3 font-bold ${t.closeTime ? '' : 'text-blue-500'}">$${exitP.toFixed(2)}</td>
+                    <td class="p-3 font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</td>
+                    <td class="p-3 text-[10px] text-gray-400">TP: ${t.takeProfit || '-'}<br>SL: ${t.stopLoss || '-'}</td>
+                    <td class="p-3"><button onclick="deleteTrade(${t.id})" class="text-red-300 hover:text-red-600">&times;</button></td>
                 `;
-                tbody.appendChild(tr);
+                body.appendChild(tr);
             });
         }
-
         renderTable();
-
-        // --- 7. GIẢ LẬP ĐỌC ẢNH ---
-       async function simulateImageUpload(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const status = document.getElementById('uploadStatus');
-
-    // 1. Kiểm tra API Key
-    let apiKey = localStorage.getItem('geminiApiKey');
-    if (!apiKey) {
-        apiKey = prompt("🤖 CHƯA CÓ API KEY!\nVui lòng dán Gemini API Key từ aistudio.google.com:");
-        if (!apiKey) return;
-        localStorage.setItem('geminiApiKey', apiKey.trim());
-    }
-
-    status.innerText = "🤖 AI đang soi ảnh... Vui lòng đợi!";
-    status.classList.remove('hidden', 'text-red-500');
-    status.classList.add('text-blue-500');
-
-    try {
-        const base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(file);
-        });
-
-        // ĐƯỜNG DẪN FIX CHUẨN: Không dùng biến, viết thẳng để tránh sai sót
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "Đọc ảnh lệnh BingX và trả về JSON raw (không markdown): {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
-                        { inlineData: { data: base64Data, mimeType: file.type } }
-                    ]
-                }]
-            })
-        });
-
-        const json = await response.json();
-
-        // Kiểm tra lỗi phản hồi từ Google
-        if (json.error) {
-            throw new Error(`Google AI báo lỗi: ${json.error.message}`);
-        }
-
-        if (!json.candidates || !json.candidates[0]) {
-            throw new Error("AI không trả về kết quả. Hãy thử lại.");
-        }
-
-        // Parse dữ liệu
-        let rawText = json.candidates[0].content.parts[0].text;
-        rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-        const tradeData = JSON.parse(rawText);
-
-        // Điền vào form
-        document.getElementById('tradeTitle').value = tradeData.title || "Lệnh từ ảnh";
-        document.getElementById('direction').value = tradeData.direction || "MUA";
-        document.getElementById('volume').value = tradeData.volume || "";
-        document.getElementById('openPrice').value = tradeData.openPrice || "";
-        document.getElementById('takeProfit').value = tradeData.takeProfit || "";
-        document.getElementById('stopLoss').value = tradeData.stopLoss || "";
-        if (tradeData.openTime) document.getElementById('openTime').value = tradeData.openTime;
-
-        status.innerText = "✅ Quét xong!";
-        setTimeout(() => status.classList.add('hidden'), 3000);
-
-    } catch (error) {
-        console.error("Lỗi chi tiết:", error);
-        status.innerText = "❌ " + error.message;
-        status.classList.replace('text-blue-500', 'text-red-500');
-    }
-    } finally {
-        input.value = "";
-    }
-}
     </script>
 </body>
 </html>
