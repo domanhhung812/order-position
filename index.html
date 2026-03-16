@@ -232,6 +232,23 @@
             });
         }
 
+        function updateTradeFees(tradeId, tradeData) {
+          const openDate = new Date(tradeData.openTime);
+          const now = new Date();
+          
+          // Tính số ngày đã trôi qua
+          const diffTime = Math.abs(now - openDate);
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          
+          // Tính fee: 0.63$ mỗi ngày
+          const currentFeeSwap = diffDays * 0.63;
+        
+          // Cập nhật lại vào Firebase
+          firebase.database().ref('trades/' + tradeId).update({
+            feeSwap: currentFeeSwap
+          });
+        }
+        
         async function sendTelegram(msg) {
             if (!TG_TOKEN || !TG_CHAT_ID) return;
             fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`);
