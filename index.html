@@ -8,15 +8,15 @@
 </head>
 <body class="bg-gray-100 p-6 font-sans">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-full mx-auto">
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Nhật Ký Giao Dịch ETH</h1>
-                <p class="text-sm text-gray-500">Tự động chốt lệnh khi chạm TP/SL (Check 1p/lần)</p>
+                <p class="text-sm text-gray-500">Tự động chốt lệnh khi chạm TP/SL (Cập nhật Live)</p>
             </div>
             <div class="text-right">
-                <p class="text-sm text-gray-500">Giá ETH (BingX)</p>
-                <p id="ethPrice" class="text-2xl font-bold text-green-600">Đang tải...</p>
+                <p class="text-sm text-gray-500">Giá ETH (Live)</p>
+                <p id="ethPrice" class="text-2xl font-bold text-gray-400">Đang kết nối...</p>
             </div>
         </div>
 
@@ -31,6 +31,11 @@
                 </div>
 
                 <form id="tradeForm" onsubmit="saveTrade(event)">
+                    <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Tiêu đề / Ghi chú</label>
+                        <input type="text" id="tradeTitle" placeholder="VD: Bắt đáy H4..." class="w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
                     <div class="grid grid-cols-2 gap-2 mb-2">
                         <div>
                             <label class="block text-sm font-medium">Chiều</label>
@@ -96,7 +101,7 @@
                     <table class="min-w-full text-left text-sm whitespace-nowrap">
                         <thead class="bg-gray-100 border-b">
                             <tr>
-                                <th class="p-3">Chiều</th>
+                                <th class="p-3">Tiêu đề</th> <th class="p-3">Chiều</th>
                                 <th class="p-3">Vol</th>
                                 <th class="p-3">Giá mở</th>
                                 <th class="p-3 text-green-600">TP</th>
@@ -122,40 +127,35 @@
         let currentTab = 'OPEN'; 
 
         function formatInputDate(date) {
-            // Định dạng ngày theo giờ local chuẩn cho input type datetime-local (YYYY-MM-DDTHH:mm)
             const tzoffset = (new Date()).getTimezoneOffset() * 60000;
             return (new Date(date - tzoffset)).toISOString().slice(0, 16);
         }
 
-        // --- 1. LẤY GIÁ BẰNG WEBSOCKET (REAL-TIME, VƯỢT RÀO CORS 100%) ---
+        // --- 1. LẤY GIÁ BẰNG WEBSOCKET (REAL-TIME CHUẨN) ---
         let ws;
 
         function connectWebSocket() {
             const priceElement = document.getElementById('ethPrice');
-            priceElement.innerText = "Đang đồng bộ...";
 
-            // Kết nối trực tiếp vào luồng dữ liệu của Binance Futures
             ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
 
             ws.onopen = () => {
-                console.log("Đã kết nối thành công với sàn!");
+                console.log("Đã kết nối luồng Live!");
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                // 'c' là Giá hiện tại (Last Price)
                 if (data && data.c) { 
                     currentEthPrice = parseFloat(data.c);
                     
                     priceElement.innerText = `$${currentEthPrice.toFixed(2)}`;
-                    priceElement.classList.remove("text-red-500");
+                    priceElement.classList.remove("text-gray-400", "text-red-500");
                     priceElement.classList.add("text-green-600");
                     
-                    // Quét kiểm tra TP/SL liên tục
                     checkTPSL(currentEthPrice); 
                     
-                    // Render lại bảng 10 giây/lần để update Net Profit cho đỡ giật web
-                    if (!ws.lastRender || Date.now() - ws.lastRender > 10000) {
+                    // Render 1 giây/lần để Net Profit nhảy liên tục
+                    if (!ws.lastRender || Date.now() - ws.lastRender > 1000) {
                         renderTable();
                         ws.lastRender = Date.now();
                     }
@@ -163,25 +163,22 @@
             };
 
             ws.onerror = (error) => {
-                console.error("Lỗi mạng:", error);
                 priceElement.innerText = "Mất kết nối!";
                 priceElement.classList.replace("text-green-600", "text-red-500");
             };
 
             ws.onclose = () => {
-                console.log("Bị ngắt kết nối. Đang thử lại sau 3 giây...");
                 setTimeout(connectWebSocket, 3000); 
             };
         }
 
-        // Khởi động luồng giá chạy ngầm
         connectWebSocket();
+
         // --- 2. HÀM TỰ ĐỘNG KIỂM TRA TP/SL ---
         function checkTPSL(livePrice) {
             let hasUpdated = false;
 
             trades.forEach(trade => {
-                // Chỉ xét những lệnh đang mở (chưa có thời gian đóng)
                 if (!trade.closeTime) {
                     let tp = parseFloat(trade.takeProfit);
                     let sl = parseFloat(trade.stopLoss);
@@ -189,33 +186,28 @@
                     let hitPrice = 0;
                     let reason = "";
 
-                    // Kiểm tra lệnh MUA (Long)
                     if (trade.direction === 'MUA') {
                         if (tp && livePrice >= tp) { isHit = true; hitPrice = tp; reason = "Take Profit"; }
                         else if (sl && livePrice <= sl) { isHit = true; hitPrice = sl; reason = "Stop Loss"; }
-                    } 
-                    // Kiểm tra lệnh BÁN (Short)
-                    else if (trade.direction === 'BAN') {
+                    } else if (trade.direction === 'BAN') {
                         if (tp && livePrice <= tp) { isHit = true; hitPrice = tp; reason = "Take Profit"; }
                         else if (sl && livePrice >= sl) { isHit = true; hitPrice = sl; reason = "Stop Loss"; }
                     }
 
-                    // Nếu chạm TP hoặc SL
                     if (isHit) {
-                        trade.closePrice = hitPrice.toString(); // Chốt ở đúng giá TP hoặc SL
-                        trade.closeTime = formatInputDate(new Date()); // Ghi nhận thời gian hiện tại
+                        trade.closePrice = hitPrice.toString(); 
+                        trade.closeTime = formatInputDate(new Date()); 
                         hasUpdated = true;
                         
-                        // Thông báo ra màn hình
-                        alert(`🚀 Lệnh ${trade.direction} ${trade.volume} ETH đã tự động khớp [${reason}] tại giá $${hitPrice}! Đã chuyển sang tab Hoàn thành.`);
+                        // Thông báo ra màn hình kèm Tiêu đề lệnh
+                        let titleMsg = trade.title ? `[${trade.title}]` : '';
+                        alert(`🚀 Lệnh ${titleMsg} ${trade.direction} ${trade.volume} ETH đã chạm ${reason} tại $${hitPrice}!`);
                     }
                 }
             });
 
-            // Nếu có lệnh thay đổi trạng thái thì lưu đè vào Local Storage
             if (hasUpdated) {
                 localStorage.setItem('ethTrades', JSON.stringify(trades));
-                // Reload lại bảng nếu đang ở tab Open để nhìn lệnh biến mất (chạy sang tab Closed)
                 renderTable(); 
             }
         }
@@ -232,10 +224,10 @@
             endDay.setHours(0,0,0,0);
 
             while(current < endDay) {
-                if(current.getDay() === 5) { // Thứ 6 nhân 3 phí swap
+                if(current.getDay() === 5) { 
                     swapFee += (0.63 * 3);
                 } else {
-                    swapFee += 0.63; // Đã đổi thành 0.63$ theo yêu cầu
+                    swapFee += 0.63; 
                 }
                 current.setDate(current.getDate() + 1);
             }
@@ -270,6 +262,7 @@
             
             const trade = {
                 id: Date.now(),
+                title: document.getElementById('tradeTitle').value, // LƯU TIÊU ĐỀ
                 direction: document.getElementById('direction').value,
                 volume: document.getElementById('volume').value,
                 openPrice: document.getElementById('openPrice').value,
@@ -312,7 +305,7 @@
             displayTrades.sort((a, b) => b.id - a.id);
 
             if (displayTrades.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-gray-400 italic">Không có lệnh nào ở đây.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="p-6 text-center text-gray-400 italic">Không có lệnh nào ở đây.</td></tr>`;
                 return;
             }
 
@@ -343,14 +336,18 @@
 
                 let priceDisplay = isClosed 
                     ? `$${parseFloat(trade.closePrice).toFixed(2)}` 
-                    : `<span class="text-blue-500 animate-pulse">$${exitPrice.toFixed(2)}</span>`;
+                    : `<span class="text-blue-500 animate-pulse font-bold">$${exitPrice.toFixed(2)}</span>`;
                 
                 let timeDisplay = isClosed 
                     ? `<div><span class="text-xs text-gray-400">M: </span>${trade.openTime.replace('T', ' ')}</div>
                        <div><span class="text-xs text-gray-400">Đ: </span>${trade.closeTime.replace('T', ' ')}</div>` 
                     : `${trade.openTime.replace('T', ' ')}`;
 
+                // Hiển thị Tiêu đề (nếu không nhập thì để dấu - )
+                let titleDisplay = trade.title ? trade.title : '-';
+
                 tr.innerHTML = `
+                    <td class="p-3 font-medium text-gray-800 max-w-[150px] truncate" title="${titleDisplay}">${titleDisplay}</td>
                     <td class="p-3 font-bold ${trade.direction === 'MUA' ? 'text-green-600' : 'text-red-600'}">
                         ${trade.direction}
                     </td>
@@ -368,19 +365,19 @@
             });
         }
 
+        renderTable();
+
         // --- 7. GIẢ LẬP ĐỌC ẢNH ---
         function simulateImageUpload(input) {
             if(input.files && input.files[0]) {
                 const status = document.getElementById('uploadStatus');
                 status.classList.remove('hidden');
                 setTimeout(() => {
+                    document.getElementById('tradeTitle').value = "Lệnh đọc từ ảnh"; // Tự điền title khi tải ảnh
                     document.getElementById('direction').value = "MUA";
                     document.getElementById('volume').value = "1";
                     document.getElementById('openPrice').value = "1986.08";
-                    
-                    // SỬA THEO CHUẨN TRONG ẢNH GỐC
                     document.getElementById('takeProfit').value = "2280.00"; 
-                    
                     document.getElementById('openTime').value = "2026-03-03T23:08";
                     
                     status.innerText = "Đã điền dữ liệu thành công!";
