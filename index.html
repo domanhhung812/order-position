@@ -161,14 +161,13 @@
             let apiKey = localStorage.getItem('geminiApiKey');
 
             if (!apiKey) {
-                apiKey = prompt("🤖 Nhập Gemini API Key (từ aistudio.google.com):");
+                apiKey = prompt("🤖 Nhập Gemini API Key:");
                 if (!apiKey) return;
                 localStorage.setItem('geminiApiKey', apiKey.trim());
             }
 
-            status.innerText = "🤖 AI đang phân tích ảnh...";
+            status.innerText = "🤖 AI đang quét (Bản ổn định)...";
             status.classList.remove('hidden', 'text-red-500');
-            status.classList.add('text-blue-500');
 
             try {
                 const base64Data = await new Promise((res) => {
@@ -177,14 +176,16 @@
                     reader.readAsDataURL(file);
                 });
 
-                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // DÙNG MODEL PRO VISION (ỔN ĐỊNH NHẤT CHO NHU CẦU ÍT)
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`;
+                
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "Bạn là OCR tài chính. Đọc ảnh BingX và trả về JSON chuẩn: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
+                                { text: "Đọc ảnh lệnh BingX này và trả về JSON: {\"title\":\"\",\"direction\":\"MUA/BAN\",\"volume\":0,\"openPrice\":0,\"takeProfit\":0,\"stopLoss\":0,\"openTime\":\"YYYY-MM-DDTHH:mm\"}" },
                                 { inlineData: { data: base64Data, mimeType: file.type } }
                             ]
                         }]
@@ -192,7 +193,14 @@
                 });
 
                 const json = await response.json();
-                if (json.error) throw new Error(json.error.message);
+                
+                // NẾU VẪN LỖI 404, LÀ DO KEY CHƯA ACTIVE MODEL
+                if (json.error) {
+                    if (json.error.code === 404) {
+                        throw new Error("Sàn chưa cấp quyền cho Key này. Hãy vào AI Studio tạo Key mới và chọn 'Gemini 1.5 Flash' trong danh sách.");
+                    }
+                    throw new Error(json.error.message);
+                }
 
                 let rawText = json.candidates[0].content.parts[0].text;
                 rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -206,13 +214,13 @@
                 document.getElementById('stopLoss').value = d.stopLoss || "";
                 if (d.openTime) document.getElementById('openTime').value = d.openTime;
 
-                status.innerText = "✅ Thành công!";
-                status.classList.replace('text-blue-500', 'text-green-500');
+                status.innerText = "✅ Xong!";
                 setTimeout(() => status.classList.add('hidden'), 3000);
             } catch (e) {
-                status.innerText = "❌ Lỗi: " + e.message;
+                status.innerText = "❌ " + e.message;
                 status.classList.replace('text-blue-500', 'text-red-500');
-                if (e.message.includes("key")) localStorage.removeItem('geminiApiKey');
+                // Xóa key để nhập cái mới nếu lỗi 404 dai dẳng
+                if (e.message.includes("Sàn chưa cấp quyền")) localStorage.removeItem('geminiApiKey');
             } finally { input.value = ""; }
         }
 
