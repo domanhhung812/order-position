@@ -100,43 +100,48 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let currentEthPrice = 0, trades = [], activeTab = 'OPEN';
+        let currentEthPrice = 0, trades = [], activeTab = 'OPEN', editingId = null;
 
-        // --- HÀM TÍNH PHÍ LOGIC 2H SÁNG ---
+        // --- CÁC HÀM EDIT TITLE ---
+        function startEdit(id) {
+            editingId = id;
+            renderTable();
+        }
+
+        async function saveEdit(id) {
+            const newTitle = document.getElementById(`edit-input-${id}`).value;
+            if (newTitle.trim() !== "") {
+                await db.ref('trades/' + id).update({ title: newTitle });
+            }
+            editingId = null;
+            renderTable();
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            renderTable();
+        }
+
+        // --- PHÍ SWAP 2H SÁNG ---
         function calculateFee(openTimeStr, closeTimeStr) {
             if (!openTimeStr) return 0;
             const openDate = new Date(openTimeStr);
             const closeDate = closeTimeStr ? new Date(closeTimeStr) : new Date();
-
-            // Mốc tính phí là 2 giờ sáng
             const feeHour = 2; 
-
-            // Hàm lấy mốc 2h sáng của một ngày cụ thể
             const getFeeThreshold = (date) => {
-                const d = new Date(date);
-                d.setHours(feeHour, 0, 0, 0);
-                return d;
+                const d = new Date(date); d.setHours(feeHour, 0, 0, 0); return d;
             };
-
             let totalFee = 0;
-            // Bắt đầu quét từ ngày mở lệnh đến ngày đóng lệnh
             let currentCheck = getFeeThreshold(openDate);
-
-            // Nếu lệnh mở SAU 2h sáng ngày hôm đó, mốc tính phí đầu tiên phải là 2h sáng ngày hôm sau
-            if (openDate >= currentCheck) {
-                currentCheck.setDate(currentCheck.getDate() + 1);
-            }
-
-            // Chạy vòng lặp: Cứ mỗi khi mốc 2h sáng nằm giữa (Thời gian mở) và (Thời gian đóng/hiện tại) thì tính 1 lần phí
+            if (openDate >= currentCheck) currentCheck.setDate(currentCheck.getDate() + 1);
             while (currentCheck <= closeDate) {
-                // Thứ 6 (getDay === 5) thì phí x3 = 1.89, ngày thường 0.63
                 totalFee += (currentCheck.getDay() === 5) ? 1.89 : 0.63;
                 currentCheck.setDate(currentCheck.getDate() + 1);
             }
-
             return parseFloat(totalFee.toFixed(2));
         }
 
+        // --- QUICK PASTE ---
         function handleQuickPaste(val) {
             if (!val || val.length < 20) return;
             try {
@@ -183,7 +188,7 @@
                 const newFee = calculateFee(t.openTime, null);
                 await db.ref('trades/' + t.id).update({ feeSwap: newFee });
             }
-            setTimeout(() => { icon.classList.remove('spin'); alert("Fees Updated (2AM Logic)!"); }, 500);
+            setTimeout(() => { icon.classList.remove('spin'); }, 500);
         }
 
         function connectWS() {
@@ -209,23 +214,40 @@
                 const openP = parseFloat(t.openPrice), exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
                 const fee = t.feeSwap || 0, pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
                 const net = pnl - fee;
+                
+                const isEditing = editingId === t.id;
                 const tr = document.createElement('tr');
                 tr.className = 'table-row-hover';
+                
                 tr.innerHTML = `
-                    <td class="py-5 pr-4 font-bold text-gray-800">${t.title}</td>
+                    <td class="py-5 pr-4">
+                        ${isEditing ? 
+                            `<div class="flex items-center gap-2">
+                                <input type="text" id="edit-input-${t.id}" value="${t.title}" class="input-minimal text-xs py-1 px-2 w-32" onkeydown="if(event.key==='Enter') saveEdit(${t.id})">
+                                <button onclick="saveEdit(${t.id})" class="text-green-500 text-xs font-bold">SAVE</button>
+                                <button onclick="cancelEdit()" class="text-gray-400 text-xs">X</button>
+                             </div>` : 
+                            `<span class="font-bold text-gray-800">${t.title}</span>`
+                        }
+                    </td>
                     <td class="py-5"><span class="direction-badge ${t.direction === 'MUA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.direction === 'MUA' ? 'BUY' : 'SELL'}</span></td>
                     <td class="py-5 text-right text-gray-500">${t.volume}</td>
                     <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
                     <td class="py-5 text-right text-gray-800">$${exitP.toLocaleString()}</td>
                     <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
                     <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
-                    <td class="py-5 text-right"><button onclick="db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button></td>
+                    <td class="py-5 text-right">
+                        <div class="flex justify-end items-center gap-3">
+                            ${!isEditing ? `<button onclick="startEdit(${t.id})" title="Edit Title" class="text-gray-300 hover:text-blue-500 transition-colors">✏️</button>` : ''}
+                            <button onclick="if(confirm('Delete?')) db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button>
+                        </div>
+                    </td>
                 `;
                 body.appendChild(tr);
             });
         }
 
-        function switchTab(tab) { activeTab = tab; document.getElementById('tabOpen').classList.toggle('tab-active', tab === 'OPEN'); document.getElementById('tabClosed').classList.toggle('tab-active', tab === 'CLOSED'); renderTable(); }
+        function switchTab(tab) { activeTab = tab; editingId = null; renderTable(); }
         function saveTrade(e) { e.preventDefault(); const id = Date.now(); const openTime = document.getElementById('openTime').value; const newTrade = { id: id, title: document.getElementById('tradeTitle').value || "Unnamed", direction: document.getElementById('direction').value, volume: document.getElementById('volume').value, openPrice: document.getElementById('openPrice').value, takeProfit: document.getElementById('takeProfit').value || 0, openTime: openTime, feeSwap: calculateFee(openTime, null), closeTime: null, closePrice: null }; db.ref('trades/' + id).set(newTrade); e.target.reset(); }
         function checkAutoClose() { trades.forEach(t => { if (!t.closeTime && t.takeProfit > 0) { const tp = parseFloat(t.takeProfit); if ((t.direction === 'MUA' && currentEthPrice >= tp) || (t.direction === 'BAN' && currentEthPrice <= tp)) { db.ref('trades/' + t.id).update({ closeTime: new Date().toISOString(), closePrice: tp, feeSwap: calculateFee(t.openTime, new Date().toISOString()) }); } } }); }
     </script>
