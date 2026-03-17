@@ -27,7 +27,7 @@
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">ETH Cloud Journal</h1>
-                <p class="text-gray-500 text-sm mt-1">Institutional Grade Tracking (No API Mode)</p>
+                <p class="text-gray-500 text-sm mt-1">Institutional Grade Tracking</p>
             </div>
             <div class="glass-card px-6 py-4 text-right">
                 <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Binance Live ETH/USDT</span>
@@ -39,14 +39,12 @@
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-8">
                     <h2 class="text-sm font-bold uppercase tracking-widest mb-4 border-b pb-4">New Position</h2>
-                    
                     <div class="mb-6">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Quick Paste (BingX Text)</label>
                         <textarea id="quickPaste" rows="3" placeholder="Dán nội dung order vào đây..." 
                             class="input-minimal text-[11px] w-full bg-gray-50 focus:bg-white resize-none"
                             oninput="handleQuickPaste(this.value)"></textarea>
                     </div>
-
                     <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-5 border-t pt-6">
                         <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Trade Label</label><input type="text" id="tradeTitle" class="input-minimal text-sm"></div>
                         <div class="grid grid-cols-2 gap-4">
@@ -104,54 +102,72 @@
 
         let currentEthPrice = 0, trades = [], activeTab = 'OPEN';
 
-        // --- HÀM XỬ LÝ DÁN TEXT ---
+        // --- HÀM TÍNH PHÍ LOGIC 2H SÁNG ---
+        function calculateFee(openTimeStr, closeTimeStr) {
+            if (!openTimeStr) return 0;
+            const openDate = new Date(openTimeStr);
+            const closeDate = closeTimeStr ? new Date(closeTimeStr) : new Date();
+
+            // Mốc tính phí là 2 giờ sáng
+            const feeHour = 2; 
+
+            // Hàm lấy mốc 2h sáng của một ngày cụ thể
+            const getFeeThreshold = (date) => {
+                const d = new Date(date);
+                d.setHours(feeHour, 0, 0, 0);
+                return d;
+            };
+
+            let totalFee = 0;
+            // Bắt đầu quét từ ngày mở lệnh đến ngày đóng lệnh
+            let currentCheck = getFeeThreshold(openDate);
+
+            // Nếu lệnh mở SAU 2h sáng ngày hôm đó, mốc tính phí đầu tiên phải là 2h sáng ngày hôm sau
+            if (openDate >= currentCheck) {
+                currentCheck.setDate(currentCheck.getDate() + 1);
+            }
+
+            // Chạy vòng lặp: Cứ mỗi khi mốc 2h sáng nằm giữa (Thời gian mở) và (Thời gian đóng/hiện tại) thì tính 1 lần phí
+            while (currentCheck <= closeDate) {
+                // Thứ 6 (getDay === 5) thì phí x3 = 1.89, ngày thường 0.63
+                totalFee += (currentCheck.getDay() === 5) ? 1.89 : 0.63;
+                currentCheck.setDate(currentCheck.getDate() + 1);
+            }
+
+            return parseFloat(totalFee.toFixed(2));
+        }
+
         function handleQuickPaste(val) {
             if (!val || val.length < 20) return;
-            
             try {
-                // Tách từng dòng
                 const lines = val.split('\n');
                 const findValue = (label) => {
                     const line = lines.find(l => l.toLowerCase().includes(label.toLowerCase()));
                     if (!line) return "";
-                    // Nếu giá trị nằm ở dòng tiếp theo (BingX thường copy kiểu này)
                     const index = lines.indexOf(line);
                     return lines[index + 1] ? lines[index + 1].trim() : "";
                 };
-
-                // Bóc tách dữ liệu
                 const direction = val.toUpperCase().includes("BUY") ? "MUA" : "BAN";
                 const volume = findValue("Amount").split(' ')[0].replace(/,/g, '');
                 const openPrice = findValue("Open Price").replace(/,/g, '');
                 const tp = findValue("Take Profit").split('/')[0].replace(/,/g, '').trim();
-                const openTimeStr = findValue("Time Opened"); // Dạng 17/03/26, 00:05:37
-                
-                // Format lại ngày tháng cho input datetime-local
-                // Chuyển 17/03/26 -> 2026-03-17
+                const openTimeStr = findValue("Time Opened");
                 let formattedTime = "";
                 if (openTimeStr.includes('/')) {
                     const [datePart, timePart] = openTimeStr.split(', ');
                     const [d, m, y] = datePart.split('/');
                     formattedTime = `20${y}-${m}-${d}T${timePart}`;
                 }
-
-                // Điền vào Form
                 document.getElementById('tradeTitle').value = "BingX " + direction;
                 document.getElementById('direction').value = direction;
                 document.getElementById('volume').value = volume;
                 document.getElementById('openPrice').value = openPrice;
                 document.getElementById('takeProfit').value = (tp === "-" ? "" : tp);
                 if (formattedTime) document.getElementById('openTime').value = formattedTime;
-
-                // Xóa ô dán sau khi thành công
                 document.getElementById('quickPaste').value = "";
-                alert("Đã nhận dữ liệu lệnh!");
-            } catch (e) {
-                console.error("Lỗi parse text:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // --- CÁC LOGIC KHÁC GIỮ NGUYÊN ---
         db.ref('trades').on('value', (snapshot) => {
             const data = snapshot.val();
             trades = data ? Object.values(data) : [];
@@ -167,21 +183,7 @@
                 const newFee = calculateFee(t.openTime, null);
                 await db.ref('trades/' + t.id).update({ feeSwap: newFee });
             }
-            setTimeout(() => { icon.classList.remove('spin'); alert("Fees Updated!"); }, 500);
-        }
-
-        function calculateFee(openTimeStr, closeTimeStr) {
-            if (!openTimeStr) return 0;
-            const start = new Date(openTimeStr); start.setHours(0,0,0,0);
-            const end = closeTimeStr ? new Date(closeTimeStr) : new Date(); end.setHours(0,0,0,0);
-            const diffDays = Math.round((end - start) / (1000*60*60*24));
-            if (diffDays <= 0) return 0;
-            let total = 0;
-            for (let i = 0; i < diffDays; i++) {
-                let d = new Date(start); d.setDate(start.getDate() + i);
-                total += (d.getDay() === 5) ? 1.89 : 0.63;
-            }
-            return parseFloat(total.toFixed(2));
+            setTimeout(() => { icon.classList.remove('spin'); alert("Fees Updated (2AM Logic)!"); }, 500);
         }
 
         function connectWS() {
@@ -206,9 +208,8 @@
             list.forEach(t => {
                 const openP = parseFloat(t.openPrice), exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
                 const fee = t.feeSwap || 0, pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
-                const net = pnl - fee;renderTable
+                const net = pnl - fee;
                 const tr = document.createElement('tr');
-                const lastBotProfit = t.lastProfit || 0;
                 tr.className = 'table-row-hover';
                 tr.innerHTML = `
                     <td class="py-5 pr-4 font-bold text-gray-800">${t.title}</td>
@@ -217,7 +218,7 @@
                     <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
                     <td class="py-5 text-right text-gray-800">$${exitP.toLocaleString()}</td>
                     <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
-                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}<div class="text-[9px] text-gray-400 font-normal">Bot: ${lastBotProfit}$</div></td>
+                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
                     <td class="py-5 text-right"><button onclick="db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button></td>
                 `;
                 body.appendChild(tr);
