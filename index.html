@@ -88,6 +88,7 @@
     </div>
 
     <script>
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyB8enzjuvFgOSzq_FSu43KXp9q2uGA0wzg",
             authDomain: "eth-trading-812.firebaseapp.com",
@@ -102,27 +103,15 @@
 
         let currentEthPrice = 0, trades = [], activeTab = 'OPEN', editingId = null;
 
-        // --- CÁC HÀM EDIT TITLE ---
-        function startEdit(id) {
-            editingId = id;
+        // --- FETCH DỮ LIỆU ---
+        db.ref('trades').on('value', (snapshot) => {
+            const data = snapshot.val();
+            trades = data ? Object.values(data) : [];
+            // checkAutoClose(); // ĐÃ TẮT ĐỂ TRÁNH NHẢY TAB NHẦM
             renderTable();
-        }
+        });
 
-        async function saveEdit(id) {
-            const newTitle = document.getElementById(`edit-input-${id}`).value;
-            if (newTitle.trim() !== "") {
-                await db.ref('trades/' + id).update({ title: newTitle });
-            }
-            editingId = null;
-            renderTable();
-        }
-
-        function cancelEdit() {
-            editingId = null;
-            renderTable();
-        }
-
-        // --- PHÍ SWAP 2H SÁNG ---
+        // --- LOGIC TÍNH PHÍ (2H SÁNG) ---
         function calculateFee(openTimeStr, closeTimeStr) {
             if (!openTimeStr) return 0;
             const openDate = new Date(openTimeStr);
@@ -139,6 +128,82 @@
                 currentCheck.setDate(currentCheck.getDate() + 1);
             }
             return parseFloat(totalFee.toFixed(2));
+        }
+
+        // --- RENDER BẢNG ---
+        function renderTable() {
+            const body = document.getElementById('tradeTableBody');
+            body.innerHTML = '';
+            
+            // Lọc tách biệt hoàn toàn hai Tab
+            const openList = trades.filter(t => !t.closeTime).sort((a,b) => new Date(b.openTime) - new Date(a.openTime));
+            const closedList = trades.filter(t => t.closeTime).sort((a,b) => new Date(b.closeTime) - new Date(a.closeTime));
+            
+            document.getElementById('countOpen').innerText = openList.length;
+            document.getElementById('countClosed').innerText = closedList.length;
+
+            const list = activeTab === 'OPEN' ? openList : closedList;
+            
+            list.forEach(t => {
+                const openP = parseFloat(t.openPrice) || 0;
+                const exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
+                const fee = t.feeSwap || 0;
+                const pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * (parseFloat(t.volume) || 0);
+                const net = pnl - fee;
+                
+                const isEditing = editingId === t.id;
+                const tr = document.createElement('tr');
+                tr.className = 'table-row-hover transition-colors border-b border-gray-50';
+                
+                if (isEditing) {
+                    tr.innerHTML = `
+                        <td colspan="7" class="py-4 px-4 bg-gray-50 rounded-lg">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <input type="text" id="edit-title-${t.id}" value="${t.title}" class="input-minimal text-xs" placeholder="Label">
+                                <input type="number" id="edit-vol-${t.id}" value="${t.volume}" class="input-minimal text-xs" placeholder="Size">
+                                <input type="number" id="edit-open-${t.id}" value="${t.openPrice}" class="input-minimal text-xs" placeholder="Entry">
+                                <input type="number" id="edit-tp-${t.id}" value="${t.takeProfit || ''}" class="input-minimal text-xs" placeholder="TP">
+                            </div>
+                            <div class="flex justify-end gap-2 mt-3">
+                                <button onclick="saveFullEdit(${t.id})" class="bg-black text-white px-4 py-1 rounded text-[10px] font-bold">SAVE</button>
+                                <button onclick="cancelEdit()" class="text-gray-400 text-[10px]">CANCEL</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="py-5 font-bold text-gray-800">${t.title}</td>
+                        <td class="py-5"><span class="direction-badge ${t.direction === 'MUA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.direction === 'MUA' ? 'BUY' : 'SELL'}</span></td>
+                        <td class="py-5 text-right text-gray-500">${t.volume}</td>
+                        <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
+                        <td class="py-5 text-right font-medium">$${exitP.toLocaleString()}</td>
+                        <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
+                        <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
+                        <td class="py-5 text-right">
+                            <div class="flex justify-end gap-3">
+                                <button onclick="startEdit(${t.id})" class="text-gray-300 hover:text-blue-500 text-sm">✏️</button>
+                                <button onclick="if(confirm('Delete?')) db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button>
+                            </div>
+                        </td>
+                    `;
+                }
+                body.appendChild(tr);
+            });
+        }
+
+        // --- HÀM XỬ LÝ EDIT ---
+        function startEdit(id) { editingId = id; renderTable(); }
+        function cancelEdit() { editingId = null; renderTable(); }
+        async function saveFullEdit(id) {
+            const updates = {
+                title: document.getElementById(`edit-title-${id}`).value,
+                volume: document.getElementById(`edit-vol-${id}`).value,
+                openPrice: document.getElementById(`edit-open-${id}`).value,
+                takeProfit: document.getElementById(`edit-tp-${id}`).value || 0
+            };
+            await db.ref('trades/' + id).update(updates);
+            editingId = null;
+            renderTable();
         }
 
         // --- QUICK PASTE ---
@@ -173,13 +238,7 @@
             } catch (e) { console.error(e); }
         }
 
-        db.ref('trades').on('value', (snapshot) => {
-            const data = snapshot.val();
-            trades = data ? Object.values(data) : [];
-            checkAutoClose();
-            renderTable();
-        });
-
+        // --- CÁC HÀM HỖ TRỢ ---
         async function manualUpdateAllFees() {
             const icon = document.getElementById('updateIcon');
             icon.classList.add('spin');
@@ -188,7 +247,7 @@
                 const newFee = calculateFee(t.openTime, null);
                 await db.ref('trades/' + t.id).update({ feeSwap: newFee });
             }
-            setTimeout(() => { icon.classList.remove('spin'); }, 500);
+            setTimeout(() => icon.classList.remove('spin'), 500);
         }
 
         function connectWS() {
@@ -201,55 +260,27 @@
         }
         connectWS();
 
-        function renderTable() {
-            const body = document.getElementById('tradeTableBody');
-            body.innerHTML = '';
-            const openList = trades.filter(t => !t.closeTime).sort((a,b) => new Date(b.openTime) - new Date(a.openTime));
-            const closedList = trades.filter(t => t.closeTime).sort((a,b) => new Date(b.closeTime) - new Date(a.closeTime));
-            document.getElementById('countOpen').innerText = openList.length;
-            document.getElementById('countClosed').innerText = closedList.length;
-
-            const list = activeTab === 'OPEN' ? openList : closedList;
-            list.forEach(t => {
-                const openP = parseFloat(t.openPrice), exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
-                const fee = t.feeSwap || 0, pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
-                const net = pnl - fee;
-                
-                const isEditing = editingId === t.id;
-                const tr = document.createElement('tr');
-                tr.className = 'table-row-hover';
-                
-                tr.innerHTML = `
-                    <td class="py-5 pr-4">
-                        ${isEditing ? 
-                            `<div class="flex items-center gap-2">
-                                <input type="text" id="edit-input-${t.id}" value="${t.title}" class="input-minimal text-xs py-1 px-2 w-32" onkeydown="if(event.key==='Enter') saveEdit(${t.id})">
-                                <button onclick="saveEdit(${t.id})" class="text-green-500 text-xs font-bold">SAVE</button>
-                                <button onclick="cancelEdit()" class="text-gray-400 text-xs">X</button>
-                             </div>` : 
-                            `<span class="font-bold text-gray-800">${t.title}</span>`
-                        }
-                    </td>
-                    <td class="py-5"><span class="direction-badge ${t.direction === 'MUA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.direction === 'MUA' ? 'BUY' : 'SELL'}</span></td>
-                    <td class="py-5 text-right text-gray-500">${t.volume}</td>
-                    <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
-                    <td class="py-5 text-right text-gray-800">$${exitP.toLocaleString()}</td>
-                    <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
-                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
-                    <td class="py-5 text-right">
-                        <div class="flex justify-end items-center gap-3">
-                            ${!isEditing ? `<button onclick="startEdit(${t.id})" title="Edit Title" class="text-gray-300 hover:text-blue-500 transition-colors">✏️</button>` : ''}
-                            <button onclick="if(confirm('Delete?')) db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button>
-                        </div>
-                    </td>
-                `;
-                body.appendChild(tr);
-            });
-        }
-
         function switchTab(tab) { activeTab = tab; editingId = null; renderTable(); }
-        function saveTrade(e) { e.preventDefault(); const id = Date.now(); const openTime = document.getElementById('openTime').value; const newTrade = { id: id, title: document.getElementById('tradeTitle').value || "Unnamed", direction: document.getElementById('direction').value, volume: document.getElementById('volume').value, openPrice: document.getElementById('openPrice').value, takeProfit: document.getElementById('takeProfit').value || 0, openTime: openTime, feeSwap: calculateFee(openTime, null), closeTime: null, closePrice: null }; db.ref('trades/' + id).set(newTrade); e.target.reset(); }
-        function checkAutoClose() { trades.forEach(t => { if (!t.closeTime && t.takeProfit > 0) { const tp = parseFloat(t.takeProfit); if ((t.direction === 'MUA' && currentEthPrice >= tp) || (t.direction === 'BAN' && currentEthPrice <= tp)) { db.ref('trades/' + t.id).update({ closeTime: new Date().toISOString(), closePrice: tp, feeSwap: calculateFee(t.openTime, new Date().toISOString()) }); } } }); }
+        
+        function saveTrade(e) { 
+            e.preventDefault(); 
+            const id = Date.now(); 
+            const openTime = document.getElementById('openTime').value; 
+            const newTrade = { 
+                id: id, 
+                title: document.getElementById('tradeTitle').value || "Unnamed", 
+                direction: document.getElementById('direction').value, 
+                volume: document.getElementById('volume').value, 
+                openPrice: document.getElementById('openPrice').value, 
+                takeProfit: document.getElementById('takeProfit').value || 0, 
+                openTime: openTime, 
+                feeSwap: calculateFee(openTime, null), 
+                closeTime: null, 
+                closePrice: null 
+            }; 
+            db.ref('trades/' + id).set(newTrade); 
+            e.target.reset(); 
+        }
     </script>
 </body>
 </html>
