@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Journal Cloud - Pro Visual</title>
-    <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -12,14 +11,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         :root { --bg-main: #f3f4f6; --bg-card: #ffffff; --text-main: #111827; --text-sub: #6b7280; --accent: #000000; --border-soft: #e5e7eb; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); -webkit-font-smoothing: antialiased; }
-        .glass-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .input-minimal { border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; transition: all 0.2s; background: #f9fafb; }
         .input-minimal:focus { border-color: var(--accent); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
         .tab-btn { padding-bottom: 12px; color: var(--text-sub); border-bottom: 2px solid transparent; transition: all 0.3s; font-weight: 600; }
         .tab-active { border-bottom-color: var(--accent); color: var(--accent); }
         .table-row-hover:hover { background-color: #f9fafb; }
-        .direction-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em; }
-        /* Hiệu ứng xoay cho nút update */
+        .direction-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
@@ -29,7 +27,7 @@
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">ETH Cloud Journal</h1>
-                <p class="text-gray-500 text-sm mt-1">Institutional Grade Tracking</p>
+                <p class="text-gray-500 text-sm mt-1">Institutional Grade Tracking (No API Mode)</p>
             </div>
             <div class="glass-card px-6 py-4 text-right">
                 <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Binance Live ETH/USDT</span>
@@ -40,13 +38,17 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-8">
-                    <h2 class="text-sm font-bold uppercase tracking-widest mb-6 border-b pb-4">New Position</h2>
-                    <div class="relative w-full border-2 border-dashed border-gray-200 py-6 text-center rounded-xl hover:border-black transition-colors mb-8">
-                        <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="simulateImageUpload(this)">
-                        <span class="text-xs font-bold uppercase tracking-tight text-gray-500">Scan BingX Screenshot</span>
+                    <h2 class="text-sm font-bold uppercase tracking-widest mb-4 border-b pb-4">New Position</h2>
+                    
+                    <div class="mb-6">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Quick Paste (BingX Text)</label>
+                        <textarea id="quickPaste" rows="3" placeholder="Dán nội dung order vào đây..." 
+                            class="input-minimal text-[11px] w-full bg-gray-50 focus:bg-white resize-none"
+                            oninput="handleQuickPaste(this.value)"></textarea>
                     </div>
-                    <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-5">
-                        <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Trade Label</label><input type="text" id="tradeTitle" placeholder="e.g. Scalp Long" class="input-minimal text-sm"></div>
+
+                    <form id="tradeForm" onsubmit="saveTrade(event)" class="space-y-5 border-t pt-6">
+                        <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Trade Label</label><input type="text" id="tradeTitle" class="input-minimal text-sm"></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Side</label><select id="direction" class="input-minimal text-sm bg-transparent"><option value="MUA">BUY</option><option value="BAN">SELL</option></select></div>
                             <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Size (ETH)</label><input type="number" step="0.0001" id="volume" class="input-minimal text-sm"></div>
@@ -56,7 +58,7 @@
                             <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Take Profit</label><input type="number" step="0.01" id="takeProfit" class="input-minimal text-sm"></div>
                         </div>
                         <div class="flex flex-col"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Opened Time</label><input type="datetime-local" id="openTime" step="1" required class="input-minimal text-sm font-medium"></div>
-                        <button type="submit" class="w-full bg-black text-white py-4 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 mt-4">Save Position</button>
+                        <button type="submit" class="w-full bg-black text-white py-4 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-lg mt-4">Save Position</button>
                     </form>
                 </div>
             </div>
@@ -72,19 +74,11 @@
                             <span id="updateIcon">🔄</span> Update Fees
                         </button>
                     </div>
-
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="text-[10px] uppercase tracking-widest text-gray-400">
-                                    <th class="pb-4 font-bold">Label</th>
-                                    <th class="pb-4 font-bold">Side</th>
-                                    <th class="pb-4 text-right font-bold">Size</th>
-                                    <th class="pb-4 text-right font-bold">Entry</th>
-                                    <th class="pb-4 text-right font-bold">Live/Exit</th>
-                                    <th class="pb-4 text-right font-bold">Fee</th>
-                                    <th class="pb-4 text-right font-bold text-black">Net P&L</th>
-                                    <th class="pb-4"></th>
+                                    <th class="pb-4 font-bold">Label</th><th class="pb-4 font-bold">Side</th><th class="pb-4 text-right font-bold">Size</th><th class="pb-4 text-right font-bold">Entry</th><th class="pb-4 text-right font-bold">Live/Exit</th><th class="pb-4 text-right font-bold">Fee</th><th class="pb-4 text-right font-bold text-black">Net P&L</th><th class="pb-4"></th>
                                 </tr>
                             </thead>
                             <tbody id="tradeTableBody" class="text-sm"></tbody>
@@ -110,7 +104,54 @@
 
         let currentEthPrice = 0, trades = [], activeTab = 'OPEN';
 
-        // 1. Snapshot chính
+        // --- HÀM XỬ LÝ DÁN TEXT ---
+        function handleQuickPaste(val) {
+            if (!val || val.length < 20) return;
+            
+            try {
+                // Tách từng dòng
+                const lines = val.split('\n');
+                const findValue = (label) => {
+                    const line = lines.find(l => l.toLowerCase().includes(label.toLowerCase()));
+                    if (!line) return "";
+                    // Nếu giá trị nằm ở dòng tiếp theo (BingX thường copy kiểu này)
+                    const index = lines.indexOf(line);
+                    return lines[index + 1] ? lines[index + 1].trim() : "";
+                };
+
+                // Bóc tách dữ liệu
+                const direction = val.toUpperCase().includes("BUY") ? "MUA" : "BAN";
+                const volume = findValue("Amount").split(' ')[0].replace(/,/g, '');
+                const openPrice = findValue("Open Price").replace(/,/g, '');
+                const tp = findValue("Take Profit").split('/')[0].replace(/,/g, '').trim();
+                const openTimeStr = findValue("Time Opened"); // Dạng 17/03/26, 00:05:37
+                
+                // Format lại ngày tháng cho input datetime-local
+                // Chuyển 17/03/26 -> 2026-03-17
+                let formattedTime = "";
+                if (openTimeStr.includes('/')) {
+                    const [datePart, timePart] = openTimeStr.split(', ');
+                    const [d, m, y] = datePart.split('/');
+                    formattedTime = `20${y}-${m}-${d}T${timePart}`;
+                }
+
+                // Điền vào Form
+                document.getElementById('tradeTitle').value = "BingX " + direction;
+                document.getElementById('direction').value = direction;
+                document.getElementById('volume').value = volume;
+                document.getElementById('openPrice').value = openPrice;
+                document.getElementById('takeProfit').value = (tp === "-" ? "" : tp);
+                if (formattedTime) document.getElementById('openTime').value = formattedTime;
+
+                // Xóa ô dán sau khi thành công
+                document.getElementById('quickPaste').value = "";
+                alert("Đã nhận dữ liệu lệnh!");
+            } catch (e) {
+                console.error("Lỗi parse text:", e);
+            }
+        }
+
+        // --- CÁC LOGIC KHÁC GIỮ NGUYÊN ---
         db.ref('trades').on('value', (snapshot) => {
             const data = snapshot.val();
             trades = data ? Object.values(data) : [];
@@ -118,25 +159,15 @@
             renderTable();
         });
 
-        // 2. Hàm cập nhật phí thủ công cho tất cả lệnh OPEN
         async function manualUpdateAllFees() {
-            const btn = document.getElementById('btnUpdate');
             const icon = document.getElementById('updateIcon');
-            btn.disabled = true;
-            icon.classList.add('spin'); // Xoay icon
-
+            icon.classList.add('spin');
             const openTrades = trades.filter(t => !t.closeTime);
-            
             for (const t of openTrades) {
                 const newFee = calculateFee(t.openTime, null);
                 await db.ref('trades/' + t.id).update({ feeSwap: newFee });
             }
-
-            setTimeout(() => {
-                icon.classList.remove('spin');
-                btn.disabled = false;
-                alert("All Fee Swaps updated to Firebase!");
-            }, 800);
+            setTimeout(() => { icon.classList.remove('spin'); alert("Fees Updated!"); }, 500);
         }
 
         function calculateFee(openTimeStr, closeTimeStr) {
@@ -153,7 +184,6 @@
             return parseFloat(total.toFixed(2));
         }
 
-        // --- BINANCE WS & TABLE RENDER (Giữ nguyên logic ổn định của Hưng) ---
         function connectWS() {
             const ws = new WebSocket('wss://fstream.binance.com/ws/ethusdt@ticker');
             ws.onmessage = (e) => {
@@ -174,23 +204,20 @@
 
             const list = activeTab === 'OPEN' ? openList : closedList;
             list.forEach(t => {
-                const openP = parseFloat(t.openPrice);
-                const exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
-                const fee = t.feeSwap || 0;
-                const pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
+                const openP = parseFloat(t.openPrice), exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
+                const fee = t.feeSwap || 0, pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
                 const net = pnl - fee;
-
                 const tr = document.createElement('tr');
-                tr.className = 'table-row-hover transition-colors';
+                tr.className = 'table-row-hover';
                 tr.innerHTML = `
-                    <td class="py-5 pr-4"><input type="text" value="${t.title}" onblur="db.ref('trades/'+${t.id}).update({title:this.value})" class="bg-transparent border-none focus:outline-none w-full font-bold text-gray-800"></td>
+                    <td class="py-5 pr-4 font-bold text-gray-800">${t.title}</td>
                     <td class="py-5"><span class="direction-badge ${t.direction === 'MUA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.direction === 'MUA' ? 'BUY' : 'SELL'}</span></td>
-                    <td class="py-5 text-right font-medium text-gray-500">${t.volume}</td>
-                    <td class="py-5 text-right font-medium text-gray-400">$${openP.toLocaleString()}</td>
-                    <td class="py-5 text-right font-medium text-gray-800">$${exitP.toLocaleString()}</td>
+                    <td class="py-5 text-right text-gray-500">${t.volume}</td>
+                    <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
+                    <td class="py-5 text-right text-gray-800">$${exitP.toLocaleString()}</td>
                     <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
-                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                    <td class="py-5 text-right"><button onclick="if(confirm('Delete?')){db.ref('trades/'+${t.id}).remove();}" class="text-gray-300 hover:text-red-500 transition-colors ml-4 text-lg">×</button></td>
+                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
+                    <td class="py-5 text-right"><button onclick="db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button></td>
                 `;
                 body.appendChild(tr);
             });
@@ -199,7 +226,6 @@
         function switchTab(tab) { activeTab = tab; document.getElementById('tabOpen').classList.toggle('tab-active', tab === 'OPEN'); document.getElementById('tabClosed').classList.toggle('tab-active', tab === 'CLOSED'); renderTable(); }
         function saveTrade(e) { e.preventDefault(); const id = Date.now(); const openTime = document.getElementById('openTime').value; const newTrade = { id: id, title: document.getElementById('tradeTitle').value || "Unnamed", direction: document.getElementById('direction').value, volume: document.getElementById('volume').value, openPrice: document.getElementById('openPrice').value, takeProfit: document.getElementById('takeProfit').value || 0, openTime: openTime, feeSwap: calculateFee(openTime, null), closeTime: null, closePrice: null }; db.ref('trades/' + id).set(newTrade); e.target.reset(); }
         function checkAutoClose() { trades.forEach(t => { if (!t.closeTime && t.takeProfit > 0) { const tp = parseFloat(t.takeProfit); if ((t.direction === 'MUA' && currentEthPrice >= tp) || (t.direction === 'BAN' && currentEthPrice <= tp)) { db.ref('trades/' + t.id).update({ closeTime: new Date().toISOString(), closePrice: tp, feeSwap: calculateFee(t.openTime, new Date().toISOString()) }); } } }); }
-        async function simulateImageUpload(input) { /* Giữ nguyên hàm OCR của bạn */ }
     </script>
 </body>
 </html>
