@@ -206,8 +206,9 @@
             list.forEach(t => {
                 const openP = parseFloat(t.openPrice), exitP = t.closeTime ? parseFloat(t.closePrice) : currentEthPrice;
                 const fee = t.feeSwap || 0, pnl = (t.direction === 'MUA' ? (exitP - openP) : (openP - exitP)) * parseFloat(t.volume);
-                const net = pnl - fee;
+                const net = pnl - fee;renderTable
                 const tr = document.createElement('tr');
+                const lastBotProfit = t.lastProfit || 0;
                 tr.className = 'table-row-hover';
                 tr.innerHTML = `
                     <td class="py-5 pr-4 font-bold text-gray-800">${t.title}</td>
@@ -216,7 +217,7 @@
                     <td class="py-5 text-right text-gray-400">$${openP.toLocaleString()}</td>
                     <td class="py-5 text-right text-gray-800">$${exitP.toLocaleString()}</td>
                     <td class="py-5 text-right text-red-400">-$${fee.toFixed(2)}</td>
-                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</td>
+                    <td class="py-5 text-right font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}<div class="text-[9px] text-gray-400 font-normal">Bot: ${lastBotProfit}$</div></td>
                     <td class="py-5 text-right"><button onclick="db.ref('trades/'+${t.id}).remove()" class="text-gray-300 hover:text-red-500 text-xl">×</button></td>
                 `;
                 body.appendChild(tr);
