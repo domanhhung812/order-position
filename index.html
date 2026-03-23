@@ -124,7 +124,7 @@
             let currentCheck = getFeeThreshold(openDate);
             if (openDate >= currentCheck) currentCheck.setDate(currentCheck.getDate() + 1);
             while (currentCheck <= closeDate) {
-                totalFee += (currentCheck.getDay() === 5) ? 1.89 : 0.63;
+                totalFee += (currentCheck.getDay() === 5) ? 1.89 : 0.87;
                 currentCheck.setDate(currentCheck.getDate() + 1);
             }
             return parseFloat(totalFee.toFixed(2));
